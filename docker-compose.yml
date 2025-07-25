@@ -1,22 +1,24 @@
 services:
-  app:
-    build:
-      # путь до докерфайла
-      context: ./
-      # докерфайл
-      dockerfile: ServerDockerFile
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_USER=${DB_USER}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME}
-    depends_on:
-      - db
-    restart: unless-stopped
-
+  # app:
+  #   build:
+  #     # путь до докерфайла
+  #     context: ./
+  #     # докерфайл
+  #     dockerfile: ServerDockerFile
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DB_HOST=db
+  #     - DB_PORT=5432
+  #     - DB_USER=${DB_USER}
+  #     - DB_PASSWORD=${DB_PASSWORD}
+  #     - DB_NAME=${DB_NAME}
+  #   depends_on:
+  #     - db
+  #   restart: unless-stopped
+  #   networks:
+  #     - localnet
+ 
   db:
     image: postgres:17
     environment:
@@ -28,6 +30,29 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    networks:
+      - localnet
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: a@e.com
+      PGADMIN_DEFAULT_PASSWORD: admpass
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - localnet
 
 volumes:
   postgres_data:
+  pgadmin_data:
+
+
+networks:
+  localnet:
+    driver: bridge

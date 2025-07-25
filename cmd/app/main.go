@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"emobile/internal/config"
 	"emobile/internal/models"
 	"flag"
+	"log"
 	"log/slog"
 	"os"
 )
@@ -28,6 +30,12 @@ func main() {
 	slog.SetDefault(models.Logger)
 
 	models.Logger.Debug("Log", "level", Level)
+
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+	models.Logger.Debug("Config", "", cfg)
 
 	if err := Run(ctx); err != nil {
 		models.Logger.Error(err.Error())
