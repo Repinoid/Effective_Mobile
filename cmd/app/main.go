@@ -53,6 +53,7 @@ func Run(ctx context.Context) (err error) {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/ping", handlera.DBPinger).Methods("GET")
+	router.HandleFunc("/add", handlera.CreateSub).Methods("POST")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
@@ -67,7 +68,7 @@ func Run(ctx context.Context) (err error) {
 
 	// Запускаем сервер в горутине
 	go func() {
-		log.Println("Server started on ", hostaport)
+		models.Logger.Info("Server started", "on", hostaport)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
 		}
@@ -89,9 +90,9 @@ func Run(ctx context.Context) (err error) {
 	defer shutdownCancel()
 
 	if err := srv.Shutdown(shutdownCtx); err != nil {
-		models.Logger.Error("Shutdown error", "", err.Error())
+		models.Logger.Error("Shutdown", "error", err.Error())
 	} else {
-		log.Println("Server stopped gracefully")
+		models.Logger.Info("Server stopped gracefully")
 	}
 
 	//err = http.ListenAndServe(fmt.Sprintf("%s:%d", models.Config.DBHost, models.Config.AppPort), router)

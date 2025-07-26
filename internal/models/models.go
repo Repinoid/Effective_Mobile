@@ -3,6 +3,7 @@ package models
 import (
 	"emobile/internal/config"
 	"log/slog"
+	"time"
 )
 
 var (
@@ -11,3 +12,13 @@ var (
 	DSN            = ""
 	Config         config.Config
 )
+
+type Subscription struct {
+	Service_name string    `json:"service_name"`       // “Yandex Plus”,
+	Price        int64     `json:"price"`              // “price”: 400,
+	User_id      string    `json:"user_id"`            // “user_id”: “60601fee-2bf1-4721-ae6f-7636e79a0cba”,
+	Start_date   string    `json:"start_date"`         // “start_date”: “07-2025”
+	End_date     string    `json:"end_date,omitempty"` // “start_date”: “07-2025”
+	Sdt          time.Time `json:"-"`                  // немаршалемое
+	Edt          time.Time `json:"-"`
+}

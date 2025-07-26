@@ -7,7 +7,6 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"emobile/internal/config"
 	"emobile/internal/models"
 )
 
@@ -17,14 +16,15 @@ type DBstruct struct {
 	//	DB *pgx.Conn
 }
 
-func NewPostgresPool(cfg *config.Config) (*DBstruct, error) {
+func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 
-	poolConfig, err := pgxpool.ParseConfig(models.DSN)
+	poolConfig, err := pgxpool.ParseConfig(DSN)
+	//	poolConfig, err := pgxpool.ParseConfig(models.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse pgxpool config: %w", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
@@ -44,7 +44,7 @@ func NewPostgresPool(cfg *config.Config) (*DBstruct, error) {
 
 // DataBase PING
 func Ping(ctx context.Context) error {
-	dataBase, err := NewPostgresPool(&models.Config)
+	dataBase, err := NewPostgresPool(ctx, models.DSN)
 	if err != nil {
 		return err
 	}
@@ -56,4 +56,9 @@ func Ping(ctx context.Context) error {
 		return fmt.Errorf("no ping %w", err)
 	}
 	return nil
+}
+
+func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (err error) {
+
+	return
 }
