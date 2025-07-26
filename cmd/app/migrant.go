@@ -17,11 +17,13 @@ func initMigration() (err error) {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 	models.Logger.Debug("Config", "", cfg)
-
+	
 	// пока для отладки
 	cfg.DBHost = "localhost"
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	
+	models.Config = *cfg
 
 	migrant, err := migrate.New(models.MigrationsPath, models.DSN)
 	if err != nil {

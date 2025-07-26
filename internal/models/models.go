@@ -1,9 +1,13 @@
 package models
 
-import "log/slog"
+import (
+	"emobile/internal/config"
+	"log/slog"
+)
 
 var (
-	Logger *slog.Logger
+	Logger         *slog.Logger
 	MigrationsPath = "file://../../migrations"
-	DSN = ""
+	DSN            = ""
+	Config         config.Config
 )

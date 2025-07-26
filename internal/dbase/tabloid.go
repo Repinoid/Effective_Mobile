@@ -11,7 +11,13 @@ import (
 	"emobile/internal/models"
 )
 
-func NewPostgresPool(cfg *config.Config) (*pgxpool.Pool, error) {
+// Структура для базы данных.
+type DBstruct struct {
+	DB *pgxpool.Pool
+	//	DB *pgx.Conn
+}
+
+func NewPostgresPool(cfg *config.Config) (*DBstruct, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(models.DSN)
 	if err != nil {
@@ -30,5 +36,24 @@ func NewPostgresPool(cfg *config.Config) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("failed to ping database: %w", err)
 	}
 
-	return pool, nil
+	dbStorage := &DBstruct{}
+	dbStorage.DB = pool
+
+	return dbStorage, nil
+}
+
+// DataBase PING
+func Ping(ctx context.Context) error {
+	dataBase, err := NewPostgresPool(&models.Config)
+	if err != nil {
+		return err
+	}
+	defer dataBase.DB.Close()
+
+	err = dataBase.DB.Ping(ctx) // база то открыта ...
+	if err != nil {
+		models.Logger.Error("No PING ", "error", err.Error())
+		return fmt.Errorf("no ping %w", err)
+	}
+	return nil
 }
