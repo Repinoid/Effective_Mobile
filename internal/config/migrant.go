@@ -1,29 +1,23 @@
-package main
+package config
 
 import (
-	"emobile/internal/config"
+	//	"emobile/internal/config"
 	"emobile/internal/models"
 	"fmt"
-	"log"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func initMigration() (err error) {
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
-	}
-	models.Logger.Debug("Config", "", cfg)
-	
+func InitMigration(cfg Config) (err error) {
+
 	// пока для отладки
 	cfg.DBHost = "localhost"
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-	cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
-	
-	models.Config = *cfg
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+
+	Configuration = cfg
 
 	migrant, err := migrate.New(models.MigrationsPath, models.DSN)
 	if err != nil {

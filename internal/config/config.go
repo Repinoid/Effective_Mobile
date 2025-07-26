@@ -17,6 +17,8 @@ type Config struct {
 	AppPort    int
 }
 
+var Configuration Config
+
 func Load() (*Config, error) {
 	// Загружаем .env файл
 	// Load will read your env file(s) and load them into ENV for this process.

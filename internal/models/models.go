@@ -1,7 +1,6 @@
 package models
 
 import (
-	"emobile/internal/config"
 	"log/slog"
 	"time"
 )
@@ -10,7 +9,6 @@ var (
 	Logger         *slog.Logger
 	MigrationsPath = "file://../../migrations"
 	DSN            = ""
-	Config         config.Config
 )
 
 type Subscription struct {

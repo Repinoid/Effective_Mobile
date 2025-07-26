@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"emobile/internal/config"
 	"emobile/internal/models"
 
 	"github.com/stretchr/testify/suite"
@@ -59,14 +60,19 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	port, err := postgresContainer.MappedPort(suite.ctx, "5432")
 	suite.Require().NoError(err)
 
-	models.Config.DBPort = port.Int()
-	models.Config.DBHost = host
-	models.Config.DBName = "testdb"
-	models.Config.DBPassword = "testpass"
-	models.Config.DBUser = "testuser"
-	cfg := models.Config
+	config.Configuration.DBPort = port.Int()
+	config.Configuration.DBHost = host
+	config.Configuration.DBName = "testdb"
+	config.Configuration.DBPassword = "testpass"
+	config.Configuration.DBUser = "testuser"
+	cfg := config.Configuration
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+
+	err = config.InitMigration(cfg)
+	if err != nil {
+		return
+	}
 
 	//	suite.DBEndPoint = fmt.Sprintf("postgres://testuser:testpass@%s:%s/testdb", host, port.Port())
 	suite.postgresContainer = postgresContainer

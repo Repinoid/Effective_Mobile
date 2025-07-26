@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"emobile/internal/config"
 	"emobile/internal/handlera"
 	"emobile/internal/models"
 	"flag"
@@ -46,7 +47,13 @@ func main() {
 
 func Run(ctx context.Context) (err error) {
 
-	err = initMigration()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+	models.Logger.Debug("Config", "", *cfg)
+
+	err = config.InitMigration(*cfg)
 	if err != nil {
 		return
 	}
@@ -59,7 +66,7 @@ func Run(ctx context.Context) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	hostaport := fmt.Sprintf("%s:%d", models.Config.DBHost, models.Config.AppPort)
+	hostaport := fmt.Sprintf("%s:%d", config.Configuration.DBHost, config.Configuration.AppPort)
 
 	srv := &http.Server{
 		Addr:    hostaport,

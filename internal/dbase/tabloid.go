@@ -60,5 +60,20 @@ func Ping(ctx context.Context) error {
 
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (err error) {
 
+	if sub.End_date == "" {
+		order := "INSERT INTO subscriptions(service_name, price, user_id, start_date) VALUES ($1, $2, $3, $4) ;"
+		_, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt)
+		return
+	}
+	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
+	_, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+
 	return
 }
+
+//    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+//     service_name VARCHAR(64) NOT NULL,
+//     price int NOT NULL,
+//     user_id VARCHAR(255) UNIQUE NOT NULL,
+//     start_date TIMESTAMP NOT NULL,
+//     end_date TIMESTAMP

@@ -2,6 +2,7 @@ package handlera
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -43,45 +44,40 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	err = json.Unmarshal(telo, &sub)
 	if err != nil {
 		rwr.WriteHeader(http.StatusBadRequest) // с некорректным  значением возвращать http.StatusBadRequest.
-		fmt.Fprintf(rwr, `{"status":"StatusBadRequest"}`)
+		json.NewEncoder(rwr).Encode(err)
 		return
 	}
 	if sub.Service_name == "" {
 		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"no Service_name"}`)
-		return
-	}
-	if sub.Service_name == "" {
-		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"no Service_name"}`)
+		json.NewEncoder(rwr).Encode(errors.New("no service name"))
 		return
 	}
 	if sub.Price == 0 {
 		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"no price"}`)
+		json.NewEncoder(rwr).Encode(errors.New("no price"))
 		return
 	}
 	if sub.User_id == "" {
 		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"no user_id"}`)
+		json.NewEncoder(rwr).Encode(errors.New("no user_id"))
 		return
 	}
 	_, err = uuid.Parse(sub.User_id)
 	if err != nil {
 		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"wrong uuid"}`)
+		json.NewEncoder(rwr).Encode(errors.New("bad user_id"))
 		return
 	}
 
 	if sub.Start_date == "" {
 		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"no start date"}`)
+		json.NewEncoder(rwr).Encode(errors.New("no start date"))
 		return
 	}
 	Start_date, err := parseDate(sub.Start_date)
 	if err != nil {
 		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"bad START date"}`)
+		json.NewEncoder(rwr).Encode(err)
 		return
 	}
 	sub.Sdt = Start_date
@@ -90,12 +86,12 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		End_date, err := parseDate(sub.End_date)
 		if err != nil {
 			rwr.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(rwr, `{"status":"bad END date"}`)
+			json.NewEncoder(rwr).Encode(err)
 			return
 		}
 		if End_date.Before(Start_date) {
 			rwr.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(rwr, `{"status":"END date before START date"}`)
+			json.NewEncoder(rwr).Encode(errors.New("end date before start"))
 			return
 
 		}
@@ -104,7 +100,7 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(rwr, `{"status":"no database"}`)
+		json.NewEncoder(rwr).Encode(err)
 		return
 	}
 	defer db.DB.Close()
@@ -112,12 +108,16 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	err = db.AddSub(req.Context(), sub)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(rwr, `{"status":"could not add sub"}`)
+		json.NewEncoder(rwr).Encode(err)
 		return
 	}
 
 	rwr.WriteHeader(http.StatusOK)
-	fmt.Fprintf(rwr, `{"status":"OK"}`)
+
+	// в поле Message err сообщение об ошибке типа
+	// "Message": "duplicate key value violates unique constraint \"subscriptions_user_id_key\""
+	// `{"Message":"OK"}` - для унификации, если парсить возврат из хандлера по полю "Message"
+	fmt.Fprintf(rwr, `{"Message":"OK"}`)
 
 }
 
