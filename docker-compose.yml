@@ -1,5 +1,6 @@
 services:
   # app:
+  #   container_name: sapp
   #   build:
   #     # путь до докерфайла
   #     context: ./
@@ -21,6 +22,7 @@ services:
  
   db:
     image: postgres:17
+    container_name: dbcont
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -42,7 +44,7 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     ports:
-      - "8080:80"
+      - "8088:80"
     depends_on:
       - db
     networks:

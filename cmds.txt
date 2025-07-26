@@ -1,0 +1,4 @@
+
+pgadmin список таблиц
+docker exec -it dbcont psql -U usera -d dbname -c "\dt"
+

@@ -23,9 +23,9 @@ RUN go build -o servak
 FROM alpine AS runner  
 
 # копируем сбилденный /wd/cmd/server/servak в корень / runner
-COPY --from=builder /wd/cmd/app/servak / 
-COPY  cmd/app/migrations ./migrations
-COPY --from=builder /app/.env .
+COPY --from=builder /wd/cmd/server/servak / 
+COPY  migrations ./migrations
+COPY  .env .
 
 # открываем порт 
 # такой же как на сервере, в http.ListenAndServe
