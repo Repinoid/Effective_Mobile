@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"emobile/internal/config"
-	"emobile/internal/dbase"
 	"emobile/internal/models"
 	"flag"
 	"fmt"
@@ -14,7 +13,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/jackc/pgx/v5/stdlib"
 )
 
 func main() {
@@ -51,42 +49,16 @@ func Run(ctx context.Context) (err error) {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 	models.Logger.Debug("Config", "", cfg)
-
-	pool, err := dbase.NewPostgresPool(cfg)
+	// пока для отладки
+	cfg.DBHost = "localhost"
+	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
+		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
+	
+	migrant, err := migrate.New(models.MigrationsPath, models.DSN)
 	if err != nil {
-		log.Fatalf("Failed connect 2 db", err)
+		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}
-	// dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-	// 	cfg.DBUser, cfg.DBPassword, "localhost", cfg.DBPort, cfg.DBName)
-	// cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
-
-	migrationsPath := "file://../../migrations"
-
-	// 1. Создаём драйвер для существующего подключения
-	//	driver, err := postgres.WithInstance(pool, &cfg)
-
-	// Convert pgxpool to stdlib DB
-	db := stdlib.OpenDBFromPool(pool)
-
-	if err != nil {
-		return fmt.Errorf("failed to create driver: %w", err)
-	}
-
-	migrant, err := migrate.NewWithDatabaseInstance(
-		migrationsPath, // Полный корректный путь к миграциям
-		"postgres",     // Имя драйвера БД
-		db,
-	)
-
-	// migrant, err := migrate.New(migrationsPath, dsn)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to create migrate instance: %w", err)
-	// }
-	// defer migrant.Close()
-
-	// if err := migrant.Steps(-1); err != nil {
-	// 	return err
-	// }
+	defer migrant.Close()
 
 	if err := migrant.Up(); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("failed to apply migrations: %w", err)

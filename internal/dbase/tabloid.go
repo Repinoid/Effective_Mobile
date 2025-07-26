@@ -8,13 +8,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"emobile/internal/config"
+	"emobile/internal/models"
 )
 
 func NewPostgresPool(cfg *config.Config) (*pgxpool.Pool, error) {
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
-		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
-	poolConfig, err := pgxpool.ParseConfig(dsn)
+	poolConfig, err := pgxpool.ParseConfig(models.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse pgxpool config: %w", err)
 	}
