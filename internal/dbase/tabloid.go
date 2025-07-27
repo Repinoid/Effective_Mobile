@@ -121,10 +121,8 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 	// если $2=0 т.е. требование по price в запрос не передано, получается price = price
 	//  - всегда TRUE и этот пункт WHERE попросту игнорируется
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
-		//	order := "SELECT service_name, price, user_id, start_date FROM subscriptions WHERE " +
-		//	order := "SELECT start_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
-		"(price = COALESCE($2, price)) AND " +
+		"price = COALESCE($2, price) AND " +
 		"user_id=$3 AND " +
 		"start_date <= COALESCE($4, start_date) AND " +
 		"end_date >= COALESCE($5, end_date)"

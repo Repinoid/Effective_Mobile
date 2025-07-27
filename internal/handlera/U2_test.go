@@ -64,6 +64,17 @@ func (suite *TstHand) Test_02ReadSub() {
 			reply:   `{"status":"OK"}`,
 			records: 0,
 		},
+		{
+			name: "end date more than recorded",
+			sub: func() models.ReadSubscription {
+				s := sub
+				s.End_date = "02-01-35"
+				return s
+			}(),
+			status:  http.StatusOK,
+			reply:   `{"status":"OK"}`,
+			records: 0,
+		},
 	}
 
 	for _, tt := range tests {
