@@ -116,6 +116,19 @@ func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscr
 
 func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscription) (subs []models.ReadSubscription, err error) {
 
+	var nilSdt, nilEdt any
+
+	if sub.Sdt.IsZero() {
+		nilSdt = nil
+	} else {
+		nilSdt = sub.Sdt
+	}
+	if sub.Edt.IsZero() {
+		nilEdt = nil
+	} else {
+		nilEdt = sub.Edt
+	}
+
 	// Так как price, start_date и end_date могут и не присутствовать в запросе, передаём их в order по COALESCE
 	// COALESCE возвращает первый ненулевой параметр. Например -
 	// COALESCE($2, price) - если price $2 не нуль, возвращается его значение
@@ -123,31 +136,36 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 	// если $2=0 т.е. требование по price в запрос не передано, получается price = price
 	//  - всегда TRUE и этот пункт WHERE попросту игнорируется
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
+		//	order := "SELECT service_name, price, user_id, start_date FROM subscriptions WHERE " +
+		//	order := "SELECT start_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
 		"(price = COALESCE($2, price)) AND " +
 		"user_id=$3 AND " +
-		" ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) " 
-		
+		"start_date = COALESCE($4, start_date) AND " +
+		"end_date = COALESCE($5, end_date)"
+	//order := "SELECT start_date FROM subscriptions WHERE (start_date = COALESCE($1, start_date))"
 
-		// // c timestamp всё ЗНАЧИТЕЛЬНО мудрёней
-		// "(   " +
-		// // если аргумент не нуль                      и     start_date в таблице не нулл и меньше равно аргумента 
-		// "(  ($4::timestamp > '0001-01-01'::timestamp) AND (start_date IS NOT NULL AND start_date >= $4::timestamp)  )" +
-		// //  ИЛИ  аргумент нуль как timestamp ИЛИ нулл как значение
-		// " OR ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) " +
-		// "  )  "
-		// //"  ) AND " +
+	// // c timestamp всё ЗНАЧИТЕЛЬНО мудрёней
+	// "(   " +
+	// // если аргумент не нуль                      и     start_date в таблице не нулл и меньше равно аргумента
+	// "(  ($4::timestamp > '0001-01-01'::timestamp) AND (start_date IS NOT NULL AND start_date >= $4::timestamp)  )" +
+	// //  ИЛИ  аргумент нуль как timestamp ИЛИ нулл как значение
+	// " OR ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) " +
+	// "  )  "
+	// //"  ) AND " +
 
-		// // Случай 1: фильтр задан (не нулевой и не NULL)
-		// "(   ($5::timestamp > '0001-01-01'::timestamp AND (" +
-		// // Если end_date NULL в БД - не включаем (по умолчанию)
-		// "(end_date IS NOT NULL AND end_date <= $5::timestamp) ))" +
-		// // ИЛИ если нужно включать записи с NULL end_date:
-		// // (end_date IS NULL OR end_date <= $5::timestamp)
-		// //-- Случай 2: фильтр не задан (нулевой или NULL) - включаем все записи
-		// " OR ($5::timestamp = '0001-01-01'::timestamp OR $5 IS NULL)   )"
+	// // Случай 1: фильтр задан (не нулевой и не NULL)
+	// "(   ($5::timestamp > '0001-01-01'::timestamp AND (" +
+	// // Если end_date NULL в БД - не включаем (по умолчанию)
+	// "(end_date IS NOT NULL AND end_date <= $5::timestamp) ))" +
+	// // ИЛИ если нужно включать записи с NULL end_date:
+	// // (end_date IS NULL OR end_date <= $5::timestamp)
+	// //-- Случай 2: фильтр не задан (нулевой или NULL) - включаем все записи
+	// " OR ($5::timestamp = '0001-01-01'::timestamp OR $5 IS NULL)   )"
 
-	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt)
+	//rows, err := dataBase.DB.Query(ctx, order, nilSdt)
+	//rows, err := dataBase.DB.Query(ctx, order, sub.Service_name,sub.User_id, nilSdt)
+	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
 	//	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name+"qwerty", sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		return nil, err
@@ -162,6 +180,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 		var sdt, edt sql.NullTime
 		// err := row.Scan(&createdAt)
 		// if createdAt.Valid {}
+		//if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt); err != nil {
 		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
 			return nil, err
 		}

@@ -21,7 +21,7 @@ func (suite *TstHand) Test_02ReadSub() {
 
 	sub := models.ReadSubscription{
 		Service_name: "Yandex Plus",
-		//	Price:        400,
+		Price:        400,
 		User_id: "60601fee-2bf1-4721-ae6f-7636e79a0cba",
 		//	Start_date:   "01-02-2025",
 		//	End_date:     "11-2025",
