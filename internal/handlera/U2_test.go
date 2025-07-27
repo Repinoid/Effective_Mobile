@@ -43,6 +43,17 @@ func (suite *TstHand) Test_02ReadSub() {
 			records: 1,
 		},
 		{
+			name: "Normaldu ZERO price",
+			sub: func() models.ReadSubscription {
+				s := sub
+				s.Price = 0
+				return s
+			}(),
+			status:  http.StatusOK,
+			reply:   `{"status":"OK"}`,
+			records: 1,
+		},
+		{
 			name: "Normaldu with start date",
 			sub: func() models.ReadSubscription {
 				s := sub
@@ -118,4 +129,80 @@ func (suite *TstHand) Test_02ReadSub() {
 		})
 	}
 
+}
+
+func (suite *TstHand) Test_03UpdateSub() {
+	// update запись по запросу subForUpdate
+	subForUpdate := models.ReadSubscription{
+		Service_name: "Yandex Plus", //
+		Price:        666,
+		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+		Start_date:   "08-08-08",
+		End_date:     "24-02-22",
+	}
+
+	subM, err := json.Marshal(subForUpdate)
+	suite.Require().NoError(err)
+
+	requestBody := strings.NewReader(string(subM))
+
+	request := httptest.NewRequest(http.MethodPut, "/update", requestBody)
+
+	// Создание ResponseRecorder
+	response := httptest.NewRecorder()
+	// вызов хандлера
+	UpdateSub(response, request)
+
+	res := response.Result()
+	defer res.Body.Close()
+
+	// HTTP put UPDATE должен вернуть http.StatusOK
+	suite.Require().Equal(http.StatusOK, res.StatusCode)
+
+	// Составляем запрос READ для чтения только что UPDATEd записи
+	subReadUpdated := models.ReadSubscription{
+		Service_name: "Yandex Plus",
+		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+	}
+
+	subM, err = json.Marshal(subReadUpdated)
+	suite.Require().NoError(err)
+
+	requestBody = strings.NewReader(string(subM))
+
+	// Создание HTTP POST-запроса на чтение записи
+	request = httptest.NewRequest(http.MethodPost, "/read", requestBody)
+
+	// Установка заголовков
+	request.Header.Set("Content-Type", "application/json")
+
+	// Создание ResponseRecorder
+	response = httptest.NewRecorder()
+	// вызов хандлера
+	ReadSub(response, request)
+
+	res = response.Result()
+	defer res.Body.Close()
+
+	// http.StatusOK should be
+	suite.Require().Equal(http.StatusOK, res.StatusCode)
+
+	resBody, err := io.ReadAll(res.Body)
+	suite.Require().NoError(err)
+
+	// размаршалливаем список
+	subs := []models.ReadSubscription{}
+	err = json.Unmarshal(resBody, &subs)
+	suite.Require().NoError(err)
+	// должна быть всего одна запись
+	suite.Require().Equal(1, len(subs))
+
+	// полученная запись должна быть равна subForUpdate
+	suite.Require().Equal(subForUpdate, subs[0])
+
+	// // должно быть 2 записи
+	// suite.Require().Equal(2, len(subs))
+	// // сравниваем Service_name и User_id первой записи
+	// suite.Require().Equal(sub.Service_name, subs[0].Service_name)
+	// suite.Require().Equal(sub.User_id, subs[0].User_id)
 }

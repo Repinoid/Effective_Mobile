@@ -122,10 +122,10 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 	//  - всегда TRUE и этот пункт WHERE попросту игнорируется
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
-		"price = COALESCE($2, price) AND " +
+		"price = COALESCE($2::int, price) AND " +
 		"user_id=$3 AND " +
 		"start_date <= COALESCE($4, start_date) AND " +
-		"end_date >= COALESCE($5, end_date)"
+		"end_date >= COALESCE($5, end_date);"
 
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
 	if err != nil {
@@ -143,6 +143,30 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 		sub.Edt = edt.Time
 		subs = append(subs, sub)
 	}
+
+	return
+}
+
+func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.ReadSubscription) (err error) {
+
+	// comments on ReadSub
+	var nilSdt, nilEdt any
+	if sub.Sdt.IsZero() {
+		nilSdt = nil
+	} else {
+		nilSdt = sub.Sdt
+	}
+	if sub.Edt.IsZero() {
+		nilEdt = nil
+	} else {
+		nilEdt = sub.Edt
+	}
+
+	// comments on ReadSub
+	order := "UPDATE subscriptions SET price=COALESCE($1, price), start_date=COALESCE($2, start_date), " +
+		"end_date=COALESCE($3, end_date) WHERE service_name=$4 AND user_id=$5;"
+
+	_, err = dataBase.DB.Exec(ctx, order, sub.Price, nilSdt, nilEdt, sub.Service_name, sub.User_id)
 
 	return
 }
