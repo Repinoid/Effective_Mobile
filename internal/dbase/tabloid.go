@@ -126,21 +126,29 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 		"service_name=$1 AND " +
 		"(price = COALESCE($2, price)) AND " +
 		"user_id=$3 AND " +
+		" ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) " 
+		
 
-		// c timestamp всё ЗНАЧИТЕЛЬНО мудрёней
-		"($4::timestamp > '0001-01-01'::timestamp AND ((end_date IS NOT NULL AND end_date <= $4::timestamp)))" +
-		" OR ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) AND " +
+		// // c timestamp всё ЗНАЧИТЕЛЬНО мудрёней
+		// "(   " +
+		// // если аргумент не нуль                      и     start_date в таблице не нулл и меньше равно аргумента 
+		// "(  ($4::timestamp > '0001-01-01'::timestamp) AND (start_date IS NOT NULL AND start_date >= $4::timestamp)  )" +
+		// //  ИЛИ  аргумент нуль как timestamp ИЛИ нулл как значение
+		// " OR ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) " +
+		// "  )  "
+		// //"  ) AND " +
 
-		// Случай 1: фильтр задан (не нулевой и не NULL)
-		"($5::timestamp > '0001-01-01'::timestamp AND (" +
-		// Если end_date NULL в БД - не включаем (по умолчанию)
-		"(end_date IS NOT NULL AND end_date <= $5::timestamp) ))" +
-		// ИЛИ если нужно включать записи с NULL end_date:
-		// (end_date IS NULL OR end_date <= $5::timestamp)
-		//-- Случай 2: фильтр не задан (нулевой или NULL) - включаем все записи
-		" OR ($5::timestamp = '0001-01-01'::timestamp OR $5 IS NULL)"
+		// // Случай 1: фильтр задан (не нулевой и не NULL)
+		// "(   ($5::timestamp > '0001-01-01'::timestamp AND (" +
+		// // Если end_date NULL в БД - не включаем (по умолчанию)
+		// "(end_date IS NOT NULL AND end_date <= $5::timestamp) ))" +
+		// // ИЛИ если нужно включать записи с NULL end_date:
+		// // (end_date IS NULL OR end_date <= $5::timestamp)
+		// //-- Случай 2: фильтр не задан (нулевой или NULL) - включаем все записи
+		// " OR ($5::timestamp = '0001-01-01'::timestamp OR $5 IS NULL)   )"
 
-	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name+"qwerty", sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt)
+	//	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name+"qwerty", sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		return nil, err
 	}
