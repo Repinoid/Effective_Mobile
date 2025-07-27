@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -32,21 +31,29 @@ func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
-	telo, err := io.ReadAll(req.Body)
-	if err != nil {
-		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"StatusBadRequest"}`)
-		return
-	}
-	defer req.Body.Close()
+	// telo, err := io.ReadAll(req.Body)
+	// if err != nil {
+	// 	rwr.WriteHeader(http.StatusBadRequest)
+	// 	fmt.Fprintf(rwr, `{"status":"StatusBadRequest"}`)
+	// 	return
+	// }
+	// defer req.Body.Close()
+
+	// sub := models.Subscription{}
+	// err = json.Unmarshal(telo, &sub)
+	// if err != nil {
+	// 	rwr.WriteHeader(http.StatusBadRequest) // с некорректным  значением возвращать http.StatusBadRequest.
+	// 	json.NewEncoder(rwr).Encode(err)
+	// 	return
+	// }
 
 	sub := models.Subscription{}
-	err = json.Unmarshal(telo, &sub)
+	err := json.NewDecoder(req.Body).Decode(&sub)
 	if err != nil {
-		rwr.WriteHeader(http.StatusBadRequest) // с некорректным  значением возвращать http.StatusBadRequest.
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	if sub.Service_name == "" {
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no service name"))
