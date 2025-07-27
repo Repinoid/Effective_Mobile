@@ -122,7 +122,8 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 	//  - всегда TRUE и этот пункт WHERE попросту игнорируется
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
-		"price = COALESCE($2::int, price) AND " +
+		"($2::int = 0 OR price = $2::int) AND " +
+		//"price = COALESCE($2::int, price) AND " +
 		"user_id=$3 AND " +
 		"start_date <= COALESCE($4, start_date) AND " +
 		"end_date >= COALESCE($5, end_date);"

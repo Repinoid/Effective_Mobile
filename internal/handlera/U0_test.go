@@ -48,7 +48,6 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 		Started:          true,
 	})
 	suite.Require().NoError(err)
-	//	defer postgresContainer.Terminate(suite.ctx)
 
 	// postgresContainer.Host — возвращает хостнейм или IP-адрес, по которому можно обратиться
 	// к запущенному контейнеру с PostgreSQL из тестового приложения.
