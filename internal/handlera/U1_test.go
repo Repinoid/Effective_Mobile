@@ -3,6 +3,7 @@ package handlera
 import (
 	"emobile/internal/models"
 	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -14,6 +15,14 @@ import (
 // 	Message   string `json:"Message"`
 // 	Detail    string `json:"Detail"`
 // 	TableName string `json:"TableName"`
+// }
+
+// var sub = models.Subscription{
+// 	Service_name: "Yandex Plus",
+// 	Price:        400,
+// 	User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+// 	Start_date:   "01-02-2025",
+// 	End_date:     "11-2025",
 // }
 
 func (suite *TstHand) Test_01AddSub() {
@@ -157,4 +166,32 @@ func (suite *TstHand) Test_01AddSub() {
 
 		})
 	}
+
+	// Пока не замутили таблицу другими тестами, проверим заодно и LIST
+	// На данный момент всего две записи внесено, проверим что их две и сравним имя/usrerid  первой записи
+
+	request := httptest.NewRequest(http.MethodGet, "/list", nil)
+
+	// Создание ResponseRecorder
+	response := httptest.NewRecorder()
+	// вызов хандлера
+	ListSub(response, request)
+
+	res := response.Result()
+	defer res.Body.Close()
+
+	suite.Require().Equal(http.StatusOK, res.StatusCode)
+
+	resBody, err := io.ReadAll(res.Body)
+	suite.Require().NoError(err)
+
+	// размаршалливаем список подписок
+	subs := []models.ReadSubscription{}
+	err = json.Unmarshal(resBody, &subs)
+	suite.Require().NoError(err)
+	// должно быть 2 записи
+	suite.Require().Equal(2, len(subs))
+	// сравниваем Service_name и User_id первой записи
+	suite.Require().Equal(sub.Service_name, subs[0].Service_name)
+	suite.Require().Equal(sub.User_id, subs[0].User_id)
 }

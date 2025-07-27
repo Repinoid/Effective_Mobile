@@ -2,6 +2,7 @@ package dbase
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
@@ -76,6 +77,31 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 	return
 }
 
+func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscription, err error) {
+
+	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions"
+	rows, err := dataBase.DB.Query(ctx, order)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		sub := models.ReadSubscription{}
+		// Start_time ||& End_time могут быть NULL. поэтому в Scan подставляем переменные sql.NullTime
+		var sdt, edt sql.NullTime
+		// err := row.Scan(&createdAt)
+		// if createdAt.Valid {}
+		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
+			return nil, err
+		}
+		sub.Sdt = sdt.Time
+		sub.Edt = edt.Time
+		subs = append(subs, sub)
+	}
+
+	return
+}
 
 // SELECT *
 // FROM subscriptions
