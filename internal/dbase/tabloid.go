@@ -75,3 +75,19 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 
 	return
 }
+
+
+// SELECT *
+// FROM subscriptions
+// WHERE
+//     (service_name = COALESCE(:service_name, service_name)) AND
+//     (price = COALESCE(:price, price)) AND
+//     (user_id = COALESCE(:user_id, user_id)) AND
+//     (start_date >= COALESCE(:start_date_from, start_date)) AND
+//     (start_date <= COALESCE(:start_date_to, start_date)) AND
+//     (end_date >= COALESCE(:end_date_from, end_date)) AND
+//     (end_date <= COALESCE(:end_date_to, end_date)) AND
+//     (sdt >= COALESCE(:sdt_from, sdt)) AND
+//     (sdt <= COALESCE(:sdt_to, sdt)) AND
+//     (edt >= COALESCE(:edt_from, edt)) AND
+//     (edt <= COALESCE(:edt_to, edt));
