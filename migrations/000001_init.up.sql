@@ -15,4 +15,4 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     start_date TIMESTAMP NOT NULL,
     end_date TIMESTAMP,
     PRIMARY KEY (user_id, service_name)
-);
+);    
