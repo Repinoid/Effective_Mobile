@@ -61,6 +61,7 @@ func Run(ctx context.Context) (err error) {
 	router := mux.NewRouter()
 	router.HandleFunc("/ping", handlera.DBPinger).Methods("GET")
 	router.HandleFunc("/add", handlera.CreateSub).Methods("POST")
+	router.HandleFunc("/read", handlera.ReadSub).Methods("POST")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)

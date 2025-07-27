@@ -20,3 +20,13 @@ type Subscription struct {
 	Sdt          time.Time `json:"-"`                  // немаршалемое
 	Edt          time.Time `json:"-"`
 }
+
+type ReadSubscription struct {
+	Service_name string    `json:"service_name,omitempty"` // “Yandex Plus”,
+	Price        int64     `json:"price,omitempty"`        // “price”: 400,
+	User_id      string    `json:"user_id,omitempty"`      // “user_id”: “60601fee-2bf1-4721-ae6f-7636e79a0cba”,
+	Start_date   string    `json:"start_date,omitempty"`   // “start_date”: “07-2025”
+	End_date     string    `json:"end_date,omitempty"`     // “start_date”: “07-2025”
+	Sdt          time.Time `json:"-"`                      // немаршалемое
+	Edt          time.Time `json:"-"`
+}

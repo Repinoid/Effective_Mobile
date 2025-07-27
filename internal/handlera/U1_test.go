@@ -10,6 +10,12 @@ import (
 	"github.com/google/uuid"
 )
 
+// type errMessage struct {
+// 	Message   string `json:"Message"`
+// 	Detail    string `json:"Detail"`
+// 	TableName string `json:"TableName"`
+// }
+
 func (suite *TstHand) Test_01AddSub() {
 
 	sub := models.Subscription{
@@ -32,6 +38,16 @@ func (suite *TstHand) Test_01AddSub() {
 			sub:    sub,
 			status: http.StatusOK,
 			reply:  `{"status":"OK"}`,
+		},
+		{
+			name: "Same user_id & service_name",
+			sub: func() models.Subscription {
+				s := sub
+				s.Price = 100
+				return s
+			}(),
+			status: http.StatusInternalServerError,
+			reply:  `{"status":"no price"}`,
 		},
 		{
 			name: "No Price",
@@ -83,8 +99,8 @@ func (suite *TstHand) Test_01AddSub() {
 			name: "End before start",
 			sub: func() models.Subscription {
 				s := sub
+				s.End_date = "08-08-08"
 				s.Start_date = "24-02-2022"
-				s.End_date = "08-08-2008"
 				s.User_id = uuid.NewString()
 				return s
 			}(),
@@ -130,10 +146,13 @@ func (suite *TstHand) Test_01AddSub() {
 			suite.Assert().Equal(tt.status, res.StatusCode)
 
 			// if tt.status != res.StatusCode {
+			// 	eM := errMessage{}
+			// 	//errBody, err :=
 			// 	resBody, err := io.ReadAll(res.Body)
 			// 	suite.Require().NoError(err)
-			// 	suite.Require().JSONEq(tt.reply, string(resBody))
-
+			// 	err = json.Unmarshal(resBody, &eM)
+			// 	suite.Require().NoError(err)
+			// 	suite.Require().Equal("ok", eM.Message)
 			// }
 
 		})

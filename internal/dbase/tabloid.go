@@ -71,9 +71,7 @@ func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (
 	return
 }
 
-//    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-//     service_name VARCHAR(64) NOT NULL,
-//     price int NOT NULL,
-//     user_id VARCHAR(255) UNIQUE NOT NULL,
-//     start_date TIMESTAMP NOT NULL,
-//     end_date TIMESTAMP
+func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscription) (subs []models.ReadSubscription, err error) {
+
+	return
+}
