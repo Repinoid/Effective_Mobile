@@ -127,25 +127,20 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 		"(price = COALESCE($2, price)) AND " +
 		"user_id=$3 AND " +
 
+		// c timestamp всё ЗНАЧИТЕЛЬНО мудрёней
 		"($4::timestamp > '0001-01-01'::timestamp AND ((end_date IS NOT NULL AND end_date <= $4::timestamp)))" +
 		" OR ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) AND " +
 
-		//"start_date >= COALESCE(NULLIF($4::timestamp, '0001-01-01 00:00:00'::timestamp), start_date) AND " +
-		"end_date <= COALESCE(NULLIF($5::timestamp, '0001-01-01 00:00:00'::timestamp), end_date)"
+		// Случай 1: фильтр задан (не нулевой и не NULL)
+		"($5::timestamp > '0001-01-01'::timestamp AND (" +
+		// Если end_date NULL в БД - не включаем (по умолчанию)
+		"(end_date IS NOT NULL AND end_date <= $5::timestamp) ))" +
+		// ИЛИ если нужно включать записи с NULL end_date:
+		// (end_date IS NULL OR end_date <= $5::timestamp)
+		//-- Случай 2: фильтр не задан (нулевой или NULL) - включаем все записи
+		" OR ($5::timestamp = '0001-01-01'::timestamp OR $5 IS NULL)"
 
-		//"($4::timestamp IS NOT NULL AND end_date <= $4::timestamp) OR ($4::timestamp IS NULL)"
-		//"CASE WHEN $4::timestamp IS NOT NULL THEN end_date <= $4::timestamp ELSE true END"
-		//"(end_date <= COALESCE($4::timestamp, end_date))"
-		//"end_date <= end_date"
-	// order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
-	// 	"service_name=$1 AND " +
-	// 	"(price = COALESCE($2, price)) AND " +
-	// 	"user_id=$3 AND " +
-	// 	"(start_date >= COALESCE($4, start_date)) AND " +
-	// 	"(end_date <= COALESCE($5, end_date))"
-
-	//rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
-	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name+"qwerty", sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		return nil, err
 	}
