@@ -18,7 +18,7 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 	defer db.DB.Close()
 
-	// запрос в БД на получения списка всех подписок 
+	// запрос в БД на получения списка всех подписок
 	subs, err := db.ListSub(req.Context())
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
@@ -28,9 +28,6 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.WriteHeader(http.StatusOK)
 
-	// возврат из хандлера маршалленого списка подписок
-	// Encode writes the JSON encoding of v to the stream,
-	// with insignificant space characters elided, followed by a newline character.
 	json.NewEncoder(rwr).Encode(subs)
 
 }

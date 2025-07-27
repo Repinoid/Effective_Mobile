@@ -4,6 +4,7 @@ import (
 	"emobile/internal/dbase"
 	"emobile/internal/models"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,7 +28,19 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
+	// в запросе read обязятельныц поля Service_name и User_id
+	if readSub.Service_name == "" {
+		rwr.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rwr).Encode(errors.New("no service name"))
+		return
+	}
+	if readSub.User_id == "" {
+		rwr.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rwr).Encode(errors.New("no user_id"))
+		return
+	}
 
+	// если присутствуют даты, конвертируем их в timastamp и заполняем .Sdt .Еdt
 	if readSub.Start_date != "" {
 		Start_date, err := parseDate(readSub.Start_date)
 		if err != nil {
@@ -65,9 +78,6 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.WriteHeader(http.StatusOK)
 
-	// в поле Message err сообщение об ошибке типа
-	// "Message": "duplicate key value violates unique constraint \"subscriptions_user_id_key\""
-	// `{"Message":"OK"}` - для унификации, если парсить возврат из хандлера по полю "Message"
-	fmt.Fprintf(rwr, `{"Message":"OK"}`)
+	json.NewEncoder(rwr).Encode(subs)
 
 }

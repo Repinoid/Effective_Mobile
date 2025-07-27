@@ -72,11 +72,6 @@ func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (
 	return
 }
 
-func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscription) (subs []models.ReadSubscription, err error) {
-
-	return
-}
-
 func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscription, err error) {
 
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions"
@@ -106,14 +101,74 @@ func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscr
 // SELECT *
 // FROM subscriptions
 // WHERE
-//     (service_name = COALESCE(:service_name, service_name)) AND
-//     (price = COALESCE(:price, price)) AND
-//     (user_id = COALESCE(:user_id, user_id)) AND
-//     (start_date >= COALESCE(:start_date_from, start_date)) AND
-//     (start_date <= COALESCE(:start_date_to, start_date)) AND
-//     (end_date >= COALESCE(:end_date_from, end_date)) AND
-//     (end_date <= COALESCE(:end_date_to, end_date)) AND
-//     (sdt >= COALESCE(:sdt_from, sdt)) AND
-//     (sdt <= COALESCE(:sdt_to, sdt)) AND
-//     (edt >= COALESCE(:edt_from, edt)) AND
-//     (edt <= COALESCE(:edt_to, edt));
+//
+//	(service_name = COALESCE(:service_name, service_name)) AND
+//	(price = COALESCE(:price, price)) AND
+//	(user_id = COALESCE(:user_id, user_id)) AND
+//	(start_date >= COALESCE(:start_date_from, start_date)) AND
+//	(start_date <= COALESCE(:start_date_to, start_date)) AND
+//	(end_date >= COALESCE(:end_date_from, end_date)) AND
+//	(end_date <= COALESCE(:end_date_to, end_date)) AND
+//	(sdt >= COALESCE(:sdt_from, sdt)) AND
+//	(sdt <= COALESCE(:sdt_to, sdt)) AND
+//	(edt >= COALESCE(:edt_from, edt)) AND
+//	(edt <= COALESCE(:edt_to, edt));
+
+func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscription) (subs []models.ReadSubscription, err error) {
+
+	// Так как price, start_date и end_date могут и не присутствовать в запросе, передаём их в order по COALESCE
+	// COALESCE возвращает первый ненулевой параметр. Например -
+	// COALESCE($2, price) - если price $2 не нуль, возвращается его значение
+	// и  получается обычное сравнение price = $2
+	// если $2=0 т.е. требование по price в запрос не передано, получается price = price
+	//  - всегда TRUE и этот пункт WHERE попросту игнорируется
+	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
+		"service_name=$1 AND " +
+		"(price = COALESCE($2, price)) AND " +
+		"user_id=$3 AND " +
+
+		"($4::timestamp > '0001-01-01'::timestamp AND ((end_date IS NOT NULL AND end_date <= $4::timestamp)))" +
+		" OR ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL) AND " +
+
+		//"start_date >= COALESCE(NULLIF($4::timestamp, '0001-01-01 00:00:00'::timestamp), start_date) AND " +
+		"end_date <= COALESCE(NULLIF($5::timestamp, '0001-01-01 00:00:00'::timestamp), end_date)"
+
+		//"($4::timestamp IS NOT NULL AND end_date <= $4::timestamp) OR ($4::timestamp IS NULL)"
+		//"CASE WHEN $4::timestamp IS NOT NULL THEN end_date <= $4::timestamp ELSE true END"
+		//"(end_date <= COALESCE($4::timestamp, end_date))"
+		//"end_date <= end_date"
+	// order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
+	// 	"service_name=$1 AND " +
+	// 	"(price = COALESCE($2, price)) AND " +
+	// 	"user_id=$3 AND " +
+	// 	"(start_date >= COALESCE($4, start_date)) AND " +
+	// 	"(end_date <= COALESCE($5, end_date))"
+
+	//rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
+	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		sub := models.ReadSubscription{}
+		// Start_time i End_time могут быть NULL. поэтому в Scan подставляем переменные sql.NullTime
+		// сканировать нулевыe значения в time.Time - ошибка
+		// sql.NullTime does not give a shit null or not
+		var sdt, edt sql.NullTime
+		// err := row.Scan(&createdAt)
+		// if createdAt.Valid {}
+		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
+			return nil, err
+		}
+		sub.Sdt = sdt.Time
+		sub.Edt = edt.Time
+		subs = append(subs, sub)
+	}
+
+	return
+}
+
+// "($4::timestamp > '0001-01-01'::timestamp AND ((end_date IS NOT NULL AND end_date <= $4::timestamp)))" +
+// "OR ($4::timestamp = '0001-01-01'::timestamp OR $4 IS NULL)"
