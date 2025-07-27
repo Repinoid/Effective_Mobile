@@ -5,29 +5,35 @@ import (
 	"emobile/internal/models"
 	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 )
 
 func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
-	telo, err := io.ReadAll(req.Body)
-	if err != nil {
-		rwr.WriteHeader(http.StatusBadRequest)
-		fmt.Fprintf(rwr, `{"status":"StatusBadRequest"}`)
-		return
-	}
-	defer req.Body.Close()
+	// telo, err := io.ReadAll(req.Body)
+	// if err != nil {
+	// 	rwr.WriteHeader(http.StatusBadRequest)
+	// 	fmt.Fprintf(rwr, `{"status":"StatusBadRequest"}`)
+	// 	return
+	// }
+	// defer req.Body.Close()
+
+	// readSub := models.ReadSubscription{}
+	// err = json.Unmarshal(telo, &readSub)
+	// if err != nil {
+	// 	rwr.WriteHeader(http.StatusBadRequest) // с некорректным  значением возвращать http.StatusBadRequest.
+	// 	json.NewEncoder(rwr).Encode(err)
+	// 	return
+	// }
 
 	readSub := models.ReadSubscription{}
-	err = json.Unmarshal(telo, &readSub)
+	err := json.NewDecoder(req.Body).Decode(&readSub)
 	if err != nil {
-		rwr.WriteHeader(http.StatusBadRequest) // с некорректным  значением возвращать http.StatusBadRequest.
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	// в запросе read обязятельныц поля Service_name и User_id
 	if readSub.Service_name == "" {
 		rwr.WriteHeader(http.StatusBadRequest)
