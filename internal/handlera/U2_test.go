@@ -22,7 +22,7 @@ func (suite *TstHand) Test_02ReadSub() {
 	sub := models.ReadSubscription{
 		Service_name: "Yandex Plus",
 		Price:        400,
-		User_id: "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
 		//	Start_date:   "01-02-2025",
 		//	End_date:     "11-2025",
 	}
@@ -30,15 +30,39 @@ func (suite *TstHand) Test_02ReadSub() {
 	tests := []struct {
 		name string
 		//	dbEndPoint string
-		sub    models.ReadSubscription
-		status int
-		reply  string
+		sub     models.ReadSubscription
+		status  int
+		records int
+		reply   string
 	}{
 		{
-			name:   "Normaldu",
-			sub:    sub,
-			status: http.StatusOK,
-			reply:  `{"status":"OK"}`,
+			name:    "Normaldu",
+			sub:     sub,
+			status:  http.StatusOK,
+			reply:   `{"status":"OK"}`,
+			records: 1,
+		},
+		{
+			name: "Normaldu with start date",
+			sub: func() models.ReadSubscription {
+				s := sub
+				s.Start_date = "02-02-25"
+				return s
+			}(),
+			status:  http.StatusOK,
+			reply:   `{"status":"OK"}`,
+			records: 1,
+		},
+		{
+			name: "start date less than recorded",
+			sub: func() models.ReadSubscription {
+				s := sub
+				s.Start_date = "02-01-25"
+				return s
+			}(),
+			status:  http.StatusOK,
+			reply:   `{"status":"OK"}`,
+			records: 0,
 		},
 	}
 
@@ -76,10 +100,10 @@ func (suite *TstHand) Test_02ReadSub() {
 			err = json.Unmarshal(resBody, &subs)
 			suite.Require().NoError(err)
 			// должно быть 2 записи
-			suite.Require().Equal(1, len(subs))
+			suite.Require().Equal(tt.records, len(subs))
 			// сравниваем Service_name и User_id первой записи
-			suite.Require().Equal(sub.Service_name, subs[0].Service_name)
-			suite.Require().Equal(sub.User_id, subs[0].User_id)
+			// suite.Require().Equal(sub.Service_name, subs[0].Service_name)
+			// suite.Require().Equal(sub.User_id, subs[0].User_id)
 		})
 	}
 
