@@ -60,15 +60,15 @@ func Ping(ctx context.Context) error {
 	return nil
 }
 
-func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (err error) {
+func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	if sub.End_date == "" {
 		order := "INSERT INTO subscriptions(service_name, price, user_id, start_date) VALUES ($1, $2, $3, $4) ;"
-		_, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt)
+		cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt)
 		return
 	}
 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
-	_, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 
 	return
 }
@@ -116,7 +116,6 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		nilEdt = sub.Edt
 	}
 
-	// Так как start_date и end_date могут и не присутствовать в запросе, передаём их в order по COALESCE
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
 		"($2::int = 0 OR price = $2::int) AND " +
@@ -124,8 +123,6 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 
 		"(start_date <= $4 OR $4 IS NULL) AND " +
 		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
-		// "start_date <= COALESCE($4, start_date) AND " +
-		// "end_date >= COALESCE($5, end_date);"
 
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
 	if err != nil {
@@ -166,7 +163,6 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 	// comments on ReadSub
 	order := "UPDATE subscriptions SET " +
 		"price = CASE WHEN $1::int != 0 THEN $1 ELSE price END, " +
-		//"price=COALESCE($1, price), " +
 		"start_date=COALESCE($2, start_date), " +
 		"end_date=COALESCE($3, end_date) " +
 		"WHERE service_name=$4 AND user_id=$5;"

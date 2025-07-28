@@ -79,18 +79,21 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 	defer db.DB.Close()
 
-	err = db.AddSub(req.Context(), sub)
+	cTag, err := db.AddSub(req.Context(), sub)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
 
-	rwr.WriteHeader(http.StatusOK)
+	rowsAffected := cTag.RowsAffected()
+	ret := struct {
+		Name string
+		rows int64
+	}{"Внесено записей", rowsAffected}
 
-	// в поле Message err сообщение об ошибке типа
-	// "Message": "duplicate key value violates unique constraint \"subscriptions_user_id_key\""
-	// `{"Message":"OK"}` - для унификации, если парсить возврат из хандлера по полю "Message"
-	fmt.Fprintf(rwr, `{"Message":"OK"}`)
+	json.NewEncoder(rwr).Encode(ret)
+
+	rwr.WriteHeader(http.StatusOK)
 
 }
