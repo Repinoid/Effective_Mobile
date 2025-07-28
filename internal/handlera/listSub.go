@@ -8,12 +8,20 @@ import (
 	"emobile/internal/models"
 )
 
+
+// ListSub godoc
+// @Summary Получить список всех подписок
+// @Description Возвращает полный список всех подписок из базы данных
+// @Tags Подписки
+// @Produce json
+// @Success 200 {array} models.Subscription
+// @Failure 500 {object} object "Ошибка сервера"
+// @Router /list [get]
 func ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer db.DB.Close()
@@ -21,13 +29,11 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	// запрос в БД на получения списка всех подписок
 	subs, err := db.ListSub(req.Context())
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rwr.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(rwr).Encode(subs)
-
 }

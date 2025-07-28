@@ -12,8 +12,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// router.HandleFunc("/ping", handlera.DBPinger).Methods("GET")
-// DBPinger - Пинг базы данных
+// DBPinger godoc
+// @Summary Database health check
+// @Description Checks if database connection is alive
+// @Produce json
+// @Success 200 {object} map[string]string "Database is reachable"
+// @Failure 500 {object} map[string]string "Database connection error"
+// @Router / [get]
 func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 
 	err := dbase.Ping(req.Context())
@@ -26,7 +31,16 @@ func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(rwr, `{"status":"StatusOK"}`)
 }
 
-// CreateSub создаёт новую запись о подписке
+// CreateSub godoc
+// @Summary Create a new subscription
+// @Description Add a new subscription to the database
+// @Accept json
+// @Produce json
+// @Param subscription body models.Subscription true "Subscription data"
+// @Success 200 {object} models.RetStruct
+// @Failure 400 {object} object "Validation error"
+// @Failure 500 {object} object "Internal server error"
+// @Router /add [post]
 func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 

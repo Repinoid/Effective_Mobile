@@ -8,6 +8,16 @@ import (
 	"net/http"
 )
 
+// ReadSub godoc
+// @Summary Получить подписки
+// @Description Возвращает список подписок по заданным параметрам
+// @Accept json
+// @Produce json
+// @Param subscription body models.Subscription true "Параметры поиска (обязательно service_name и user_id)"
+// @Success 200 {array} models.Subscription
+// @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
+// @Failure 500 {object} string "Ошибка сервера"
+// @Router /read [post]
 func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
@@ -20,37 +30,43 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 
 	// в запросе read обязятельныц поля Service_name и User_id
 	if readSub.Service_name == "" {
-		rwr.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rwr).Encode(errors.New("no service name"))
+		http.Error(rwr, "no service name", http.StatusBadRequest)
 		return
 	}
 	if readSub.User_id == "" {
-		rwr.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rwr).Encode(errors.New("no user_id"))
+		http.Error(rwr, "no user_id", http.StatusBadRequest)
 		return
 	}
 
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer db.DB.Close()
 
+	// subs []models.Subscription
 	subs, err := db.ReadSub(req.Context(), readSub)
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rwr.WriteHeader(http.StatusOK)
 
 	json.NewEncoder(rwr).Encode(subs)
-
 }
 
+// UpdateSub godoc
+// @Summary Обновление подписки
+// @Description Обновляет данные подписки в базе данных
+// @Accept json
+// @Produce json
+// @Param subscription body models.Subscription true "Данные подписки для обновления (обязательные: service_name и user_id)"
+// @Success 200 {object} models.RetStruct
+// @Failure 400 {object} object "Неверный запрос"
+// @Failure 500 {object} object "Ошибка сервера"
+// @Router /update [put]
 func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
@@ -95,5 +111,4 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 
 	json.NewEncoder(rwr).Encode(ret)
-
 }

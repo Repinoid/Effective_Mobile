@@ -18,6 +18,18 @@ type DBstruct struct {
 	//	DB *pgx.Conn
 }
 
+// NewPostgresPool создает новый пул подключений к PostgreSQL
+// @param ctx context.Context - Контекст с таймаутом для установки соединения
+// @param DSN string - Строка подключения к БД (Data Source Name)
+// @return *DBstruct - Обертка над пулом подключений
+// @return error - Ошибка, если не удалось установить соединение
+//
+// @errors
+//   - "failed to parse pgxpool config" - Неверный формат строки подключения
+//   - "failed to create pgxpool" - Ошибка при создании пула подключений
+//   - "failed to ping database" - Ошибка при проверке соединения
+//
+// @note Устанавливает 10-секундный таймаут для подключения
 func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(DSN)
@@ -44,7 +56,20 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 	return dbStorage, nil
 }
 
-// DataBase PING
+// Ping проверяет доступность базы данных
+//
+// Параметры:
+//
+//	ctx - контекст с возможностью таймаута/отмены операции
+//
+// Возвращаемые значения:
+//
+//	error - nil при успешном подключении, иначе ошибка:
+//	  - ошибка создания пула подключений (из NewPostgresPool)
+//	  - "no ping ..." - если не удалось выполнить Ping запрос
+//
+// Логирование:
+//   - При ошибках подключения пишет в лог (models.Logger.Error)
 func Ping(ctx context.Context) error {
 	dataBase, err := NewPostgresPool(ctx, models.DSN)
 	if err != nil {
@@ -60,6 +85,22 @@ func Ping(ctx context.Context) error {
 	return nil
 }
 
+// AddSub добавляет новую подписку в базу данных
+//
+// Параметры:
+//
+//	ctx - контекст выполнения
+//	sub - данные подписки для добавления (модель Subscription)
+//
+// Возвращаемые значения:
+//
+//	pgconn.CommandTag - информация о выполненной операции (количество затронутых строк)
+//	error - ошибка при выполнении запроса
+//
+// Логика работы:
+//   - Если End_date не указан, выполняет INSERT без даты окончания
+//   - Если End_date указан, выполняет INSERT с датой окончания
+//   - Автоматически определяет нужный SQL-запрос на основе наличия End_date
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	if sub.End_date == "" {
@@ -73,6 +114,21 @@ func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (
 	return
 }
 
+// ListSub возвращает список всех подписок из базы данных
+//
+// Параметры:
+//
+//	ctx - контекст выполнения (для таймаутов/отмены)
+//
+// Возвращаемые значения:
+//
+//	[]models.Subscription - слайс с подписками
+//	error - ошибка при выполнении запроса
+//
+// Особенности:
+//   - Обрабатывает NULL-значения для дат (start_date, end_date)
+//   - Автоматически конвертирует sql.NullTime в time.Time
+//   - Закрывает rows после обработки (defer rows.Close())
 func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.Subscription, err error) {
 
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions"
@@ -99,6 +155,27 @@ func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.Subscripti
 	return
 }
 
+// ReadSub выполняет поиск подписок по заданным параметрам
+//
+// Параметры:
+//
+//	ctx - контекст выполнения
+//	sub - модель подписки с параметрами поиска:
+//	  - Service_name (обязательный)
+//	  - User_id (обязательный)
+//	  - Price (опциональный, 0 = не учитывать)
+//	  - Sdt/Edt (опциональные, проверка временного диапазона)
+//
+// Возвращает:
+//
+//	[]models.Subscription - список найденных подписок
+//	error - ошибка выполнения запроса
+//
+// Особенности реализации:
+//   - Автоматически обрабатывает нулевые даты (IsZero())
+//   - Использует NULL-safe сравнения для дат
+//   - Цена = 0 означает "любая цена"
+//   - Преобразует sql.NullTime в time.Time
 func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) (subs []models.Subscription, err error) {
 
 	// sub.Sdt nilEdt тип time.Time.
@@ -144,6 +221,27 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 	return
 }
 
+// UpdateSub обновляет данные подписки в базе данных
+//
+// Параметры:
+//
+//	ctx - контекст выполнения
+//	sub - модель подписки с обновляемыми данными:
+//	  - Service_name (обязательный, для идентификации)
+//	  - User_id (обязательный, для идентификации)
+//	  - Price (опциональный, 0 = не обновлять)
+//	  - Sdt/Edt (опциональные, nil/IsZero() = не обновлять)
+//
+// Возвращает:
+//
+//	pgconn.CommandTag - информация о количестве обновленных строк
+//	error - ошибка выполнения запроса
+//
+// Особенности:
+//   - Обновляет только не-нулевые поля
+//   - Для Price значение 0 означает "не обновлять"
+//   - Для дат nil/IsZero() означает "не обновлять"
+//   - Использует COALESCE для безопасного обновления дат
 func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	// comments on ReadSub
@@ -172,6 +270,29 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 	return
 }
 
+// DeleteSub удаляет подписки по заданным критериям
+//
+// Параметры:
+//
+//	ctx - контекст выполнения
+//	sub - критерии удаления:
+//	  - Service_name (пустая строка = любой сервис)
+//	  - Price (0 = любая цена ≠ 0, иначе точное совпадение)
+//	  - User_id (пустая строка = любой пользователь)
+//	  - Sdt/Edt (опциональные, для фильтрации по диапазону дат)
+//
+// Возвращает:
+//
+//	pgconn.CommandTag - количество удаленных записей
+//	error - ошибка выполнения
+//
+// Особенности:
+//   - Пустые строки/нулевые значения в критериях = игнорировать параметр
+//   - Для дат используется NULL-safe сравнение
+//   - Логирует ошибки в models.Logger
+//   - Сложная логика для цены:
+//   - price=0 → удалить все с ненулевой ценой
+//   - price≠0 → удалить только с указанной ценой
 func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	// comments on ReadSub
@@ -203,17 +324,40 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 	return
 }
 
+// SumSub вычисляет сумму цен подписок по заданным критериям
+//
+// Параметры:
+//
+//	ctx - контекст выполнения
+//	sub - критерии выборки:
+//	  - Service_name (обязательный)
+//	  - User_id (обязательный)
+//	  - Sdt - начальная дата диапазона (обязательная)
+//	  - Edt - конечная дата диапазона (обязательная)
+//	  - Price не используется в текущей реализации
+//
+// Возвращает:
+//
+//	int64 - сумма цен (0 если нет подходящих подписок)
+//	error - ошибка выполнения запроса
+//
+// Особенности:
+//   - Выбирает подписки, которые полностью входят в заданный диапазон дат
+//   - Для включения в сумму, подписка должна:
+//   - Иметь start_date >= указанной начальной даты
+//   - Иметь end_date <= указанной конечной даты
+//   - Если end_date IS NULL, подписка не будет включена в сумму
 func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (summa int64, err error) {
 
 	order := "SELECT SUM(price) FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
-		"user_id=$3 AND " +
-		"start_date >= $4 AND " +
-		"end_date <= $5 ;"
+		"user_id=$2 AND " +
+		"start_date >= $3 AND " +
+		"end_date <= $4 ;"
 		// для захвата диапазона стартовая дата должна быть БОЛЬШЕ чем переданная,
 		// конечная - меньше
 
-	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
 	summa = 0
 	err = row.Scan(&summa)
 	if err != nil {
