@@ -83,11 +83,46 @@ func (suite *TstHand) Test_03UpdateSub() {
 	suite.Require().Equal(subForUpdate.Sdt, subs[0].Sdt)
 	suite.Require().Equal(subForUpdate.Edt, subs[0].Edt)
 }
-func (suite *TstHand) Test_04DeleteAllSubs() {
-	// пустая структура.
-	subForUpdate := models.Subscription{}
+
+func (suite *TstHand) Test_04SetSumma() {
+
+	subForUpdate := models.Subscription{
+		Service_name: "Yandex Plus", //
+		Price:        666,
+		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+		Start_date:   "08-08-08",
+		End_date:     "24-02-22",
+	}
 
 	subM, err := json.Marshal(subForUpdate)
+	suite.Require().NoError(err)
+
+	requestBody := strings.NewReader(string(subM))
+
+	request := httptest.NewRequest(http.MethodPut, "/update", requestBody)
+
+	// Создание ResponseRecorder
+	response := httptest.NewRecorder()
+	// вызов хандлера
+	UpdateSub(response, request)
+
+	res := response.Result()
+	defer res.Body.Close()
+
+	// HTTP put UPDATE должен вернуть http.StatusOK
+	suite.Require().Equal(http.StatusOK, res.StatusCode)
+
+
+}
+
+
+
+
+func (suite *TstHand) Test_05DeleteAllSubs() {
+	// пустая структура.
+	subForDelete := models.Subscription{}
+
+	subM, err := json.Marshal(subForDelete)
 	suite.Require().NoError(err)
 
 	requestBody := strings.NewReader(string(subM))

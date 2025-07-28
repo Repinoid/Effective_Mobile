@@ -202,3 +202,23 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 
 	return
 }
+
+func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (summa int64, err error) {
+
+	order := "SELECT SUM(price) FROM subscriptions WHERE " +
+		"service_name=$1 AND " +
+		"user_id=$3 AND " +
+		"start_date >= $4 AND " +
+		"end_date <= $5 ;"
+		// для захвата диапазона стартовая дата должна быть БОЛЬШЕ чем переданная,
+		// конечная - меньше
+
+	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	summa = 0
+	err = row.Scan(&summa)
+	if err != nil {
+		return 0, err
+	}
+
+	return
+}

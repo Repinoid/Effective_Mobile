@@ -4,6 +4,7 @@ import (
 	"context"
 	"emobile/internal/config"
 	"emobile/internal/handlera"
+	"emobile/internal/middlas"
 	"emobile/internal/models"
 	"flag"
 	"fmt"
@@ -65,6 +66,10 @@ func Run(ctx context.Context) (err error) {
 	router.HandleFunc("/list", handlera.ListSub).Methods("GET")
 	router.HandleFunc("/update", handlera.UpdateSub).Methods("PUT")
 	router.HandleFunc("/delete", handlera.DeleteSub).Methods("DELETE")
+	router.HandleFunc("/summa", handlera.SumSub).Methods("POST")
+
+	// подключаем middleware логирования
+	router.Use(middlas.WithLogging)
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
