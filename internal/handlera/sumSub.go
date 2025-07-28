@@ -4,10 +4,19 @@ import (
 	"emobile/internal/dbase"
 	"emobile/internal/models"
 	"encoding/json"
-	"errors"
 	"net/http"
 )
 
+// SumSub godoc
+// @Summary Расчет суммы подписок
+// @Description Возвращает сумму подписок по заданным параметрам
+// @Accept json
+// @Produce json
+// @Param subscription body models.Subscription true "Параметры для расчета суммы"
+// @Success 200 {object} models.RetStruct
+// @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
+// @Failure 500 {object} string "Ошибка сервера"
+// @Router /summa [post]
 func SumSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
@@ -18,38 +27,78 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 		http.Error(rwr, err.Error(), http.StatusBadRequest)
 		return
 	}
-	
+
 	// все поля кроме цены должны быть определены
 	if readSub.Service_name == "" ||
-		readSub.User_id == ""  ||
+		readSub.User_id == "" ||
 		readSub.Edt.IsZero() || readSub.Sdt.IsZero() {
-		rwr.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rwr).Encode(errors.New("не все данные указаны"))
+		http.Error(rwr, "не все данные указаны", http.StatusBadRequest)
 		return
 	}
 
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	defer db.DB.Close()
 
 	summa, err := db.SumSub(req.Context(), readSub)
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	rwr.WriteHeader(http.StatusOK)
 
-	ret := struct {
-		Name string
-		rows int64
-	}{"Сумма подписок", summa}
-
+	ret := models.RetStruct{
+		Name: "Сумма подписок",
+		Cunt: summa,
+	}
 	json.NewEncoder(rwr).Encode(ret)
 
+}
+
+// DeleteSub godoc
+// @Summary Удаление подписки
+// @Description Удаляет подписку по переданным данным
+// @Accept json
+// @Produce json
+// @Param subscription body models.Subscription true "Данные подписки для удаления"
+// @Success 200 {object} models.RetStruct
+// @Failure 400 {object} string "Неверный формат запроса"
+// @Failure 500 {object} string "Ошибка сервера"
+// @Router /delete [delete]
+func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
+
+	rwr.Header().Set("Content-Type", "application/json")
+
+	readSub := models.Subscription{}
+	err := json.NewDecoder(req.Body).Decode(&readSub)
+	if err != nil {
+		http.Error(rwr, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	if err != nil {
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	defer db.DB.Close()
+
+	cTag, err := db.DeleteSub(req.Context(), readSub)
+	if err != nil {
+		http.Error(rwr, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rwr.WriteHeader(http.StatusOK)
+
+	ret := models.RetStruct{
+		Name: "Удалено записей",
+		Cunt: cTag.RowsAffected(),
+	}
+
+	json.NewEncoder(rwr).Encode(ret)
 }
