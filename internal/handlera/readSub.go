@@ -90,11 +90,10 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rowsAffected := cTag.RowsAffected()
-	ret := struct {
-		Name string
-		rows int64
-	}{"Обновлено записей", rowsAffected}
+	ret := models.RetStruct{
+		Name: "Обновлено записей",
+		Cunt: cTag.RowsAffected(),
+	}
 
 	json.NewEncoder(rwr).Encode(ret)
 
@@ -128,11 +127,10 @@ func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.WriteHeader(http.StatusOK)
 
-	rowsAffected := cTag.RowsAffected()
-	ret := struct {
-		Name string
-		rows int64
-	}{"Удалено записей", rowsAffected}
+	ret := models.RetStruct{
+		Name: "Удалено записей",
+		Cunt: cTag.RowsAffected(),
+	}
 
 	json.NewEncoder(rwr).Encode(ret)
 

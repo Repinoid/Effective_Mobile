@@ -86,11 +86,10 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rowsAffected := cTag.RowsAffected()
-	ret := struct {
-		Name string
-		rows int64
-	}{"Внесено записей", rowsAffected}
+	ret := models.RetStruct{
+		Name: "Внесено записей",
+		Cunt: cTag.RowsAffected(),
+	}
 
 	json.NewEncoder(rwr).Encode(ret)
 
