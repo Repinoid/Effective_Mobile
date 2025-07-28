@@ -19,7 +19,7 @@ func (suite *TstHand) Test_02ReadSub() {
 
 	// Völkischer Beobachter   Avanti
 
-	sub := models.ReadSubscription{
+	sub := models.Subscription{
 		Service_name: "Yandex Plus",
 		Price:        400,
 		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
@@ -30,14 +30,14 @@ func (suite *TstHand) Test_02ReadSub() {
 	tests := []struct {
 		name string
 		//	dbEndPoint string
-		sub     models.ReadSubscription
+		sub     models.Subscription
 		status  int
 		records int
 		reply   string
 	}{
 		{
 			name: "start date less than recorded",
-			sub: func() models.ReadSubscription {
+			sub: func() models.Subscription {
 				s := sub
 				s.Start_date = "02-01-25"
 				return s
@@ -55,7 +55,7 @@ func (suite *TstHand) Test_02ReadSub() {
 		},
 		{
 			name: "Normaldu ZERO price",
-			sub: func() models.ReadSubscription {
+			sub: func() models.Subscription {
 				s := sub
 				s.Price = 0
 				return s
@@ -66,7 +66,7 @@ func (suite *TstHand) Test_02ReadSub() {
 		},
 		{
 			name: "Normaldu with start date",
-			sub: func() models.ReadSubscription {
+			sub: func() models.Subscription {
 				s := sub
 				s.Start_date = "02-02-25"
 				return s
@@ -77,7 +77,7 @@ func (suite *TstHand) Test_02ReadSub() {
 		},
 		{
 			name: "end date more than recorded",
-			sub: func() models.ReadSubscription {
+			sub: func() models.Subscription {
 				s := sub
 				s.End_date = "02-01-35"
 				return s
@@ -118,7 +118,7 @@ func (suite *TstHand) Test_02ReadSub() {
 			suite.Require().NoError(err)
 
 			// размаршалливаем список подписок
-			subs := []models.ReadSubscription{}
+			subs := []models.Subscription{}
 			err = json.Unmarshal(resBody, &subs)
 			suite.Require().NoError(err)
 			// должно быть 2 записи

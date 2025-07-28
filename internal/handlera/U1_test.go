@@ -192,7 +192,7 @@ func (suite *TstHand) Test_01AddSub() {
 	suite.Require().NoError(err)
 
 	// размаршалливаем список подписок
-	subs := []models.ReadSubscription{}
+	subs := []models.Subscription{}
 	err = json.Unmarshal(resBody, &subs)
 	suite.Require().NoError(err)
 	// должно быть 2 записи

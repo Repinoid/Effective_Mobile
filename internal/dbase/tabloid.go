@@ -72,7 +72,7 @@ func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (
 	return
 }
 
-func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscription, err error) {
+func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.Subscription, err error) {
 
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions"
 	rows, err := dataBase.DB.Query(ctx, order)
@@ -82,7 +82,7 @@ func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscr
 	defer rows.Close()
 
 	for rows.Next() {
-		sub := models.ReadSubscription{}
+		sub := models.Subscription{}
 		// Start_time ||& End_time могут быть NULL. поэтому в Scan подставляем переменные sql.NullTime
 		var sdt, edt sql.NullTime
 		// err := row.Scan(&createdAt)
@@ -98,7 +98,7 @@ func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscr
 	return
 }
 
-func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscription) (subs []models.ReadSubscription, err error) {
+func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) (subs []models.Subscription, err error) {
 
 	// sub.Sdt nilEdt тип time.Time.
 	// происходит полная муть если это передавать в Query из-за того что у них нет обычного nil,
@@ -131,7 +131,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 	defer rows.Close()
 
 	for rows.Next() {
-		sub := models.ReadSubscription{}
+		sub := models.Subscription{}
 		var sdt, edt sql.NullTime
 		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
 			return nil, err
@@ -144,7 +144,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 	return
 }
 
-func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.ReadSubscription) (err error) {
+func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (err error) {
 
 	// comments on ReadSub
 	var nilSdt, nilEdt any

@@ -11,7 +11,7 @@ import (
 
 func (suite *TstHand) Test_03UpdateSub() {
 	// update запись по запросу subForUpdate
-	subForUpdate := models.ReadSubscription{
+	subForUpdate := models.Subscription{
 		Service_name: "Yandex Plus", //
 		Price:        666,
 		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
@@ -38,7 +38,7 @@ func (suite *TstHand) Test_03UpdateSub() {
 	suite.Require().Equal(http.StatusOK, res.StatusCode)
 
 	// Составляем запрос READ для чтения только что UPDATEd записи
-	subReadUpdated := models.ReadSubscription{
+	subReadUpdated := models.Subscription{
 		Service_name: "Yandex Plus",
 		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
 	}
@@ -69,7 +69,7 @@ func (suite *TstHand) Test_03UpdateSub() {
 	suite.Require().NoError(err)
 
 	// размаршалливаем список
-	subs := []models.ReadSubscription{}
+	subs := []models.Subscription{}
 	err = json.Unmarshal(resBody, &subs)
 	suite.Require().NoError(err)
 	// должна быть всего одна запись

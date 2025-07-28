@@ -11,7 +11,7 @@ import (
 func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
-	readSub := models.ReadSubscription{}
+	readSub := models.Subscription{}
 	err := json.NewDecoder(req.Body).Decode(&readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusBadRequest)
@@ -56,7 +56,7 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
 
-	readSub := models.ReadSubscription{}
+	readSub := models.Subscription{}
 	err := json.NewDecoder(req.Body).Decode(&readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusBadRequest)

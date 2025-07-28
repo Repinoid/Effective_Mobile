@@ -21,7 +21,7 @@ type Subscription struct {
 	Edt          time.Time `json:"-"`
 }
 
-// type ReadSubscription struct {
+// type Subscription struct {
 // 	Service_name string    `json:"service_name,omitempty"` // “Yandex Plus”,
 // 	Price        int64     `json:"price,omitempty"`        // “price”: 400,
 // 	User_id      string    `json:"user_id,omitempty"`      // “user_id”: “60601fee-2bf1-4721-ae6f-7636e79a0cba”,
