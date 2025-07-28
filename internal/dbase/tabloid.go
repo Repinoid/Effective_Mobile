@@ -121,8 +121,11 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		"service_name=$1 AND " +
 		"($2::int = 0 OR price = $2::int) AND " +
 		"user_id=$3 AND " +
-		"start_date <= COALESCE($4, start_date) AND " +
-		"end_date >= COALESCE($5, end_date);"
+
+		"(start_date <= $4 OR $4 IS NULL) AND " +
+		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
+		// "start_date <= COALESCE($4, start_date) AND " +
+		// "end_date >= COALESCE($5, end_date);"
 
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
 	if err != nil {
@@ -148,6 +151,7 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 
 	// comments on ReadSub
 	var nilSdt, nilEdt any
+
 	if sub.Sdt.IsZero() {
 		nilSdt = nil
 	} else {
@@ -160,8 +164,12 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 	}
 
 	// comments on ReadSub
-	order := "UPDATE subscriptions SET price=COALESCE($1, price), start_date=COALESCE($2, start_date), " +
-		"end_date=COALESCE($3, end_date) WHERE service_name=$4 AND user_id=$5;"
+	order := "UPDATE subscriptions SET " +
+		"price = CASE WHEN $1::int != 0 THEN $1 ELSE price END, " +
+		//"price=COALESCE($1, price), " +
+		"start_date=COALESCE($2, start_date), " +
+		"end_date=COALESCE($3, end_date) " +
+		"WHERE service_name=$4 AND user_id=$5;"
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, nilSdt, nilEdt, sub.Service_name, sub.User_id)
 
@@ -184,18 +192,17 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 	}
 
 	order := "DELETE FROM subscriptions WHERE " +
-		//"service_name = COALESCE($1, service_name) "
 		"($1 = '' OR service_name = $1) AND " +
 		"( ($2::int = 0 AND price != 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
-		"($3 = '' OR service_name = $3) AND " +
-		"start_date <= COALESCE($4, start_date) AND " +
-		"end_date <= COALESCE($5, end_date) ;"
+		"($3 = '' OR user_id = $3) AND " +
+
+		"(start_date <= $4 OR $4 IS NULL) AND " +
+		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
 	}
-	//cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
 
 	return
 }
