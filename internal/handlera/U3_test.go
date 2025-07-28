@@ -1,6 +1,7 @@
 package handlera
 
 import (
+	"emobile/internal/dbase"
 	"emobile/internal/models"
 	"encoding/json"
 	"io"
@@ -81,4 +82,38 @@ func (suite *TstHand) Test_03UpdateSub() {
 	suite.Require().Equal(subForUpdate.Price, subs[0].Price)
 	suite.Require().Equal(subForUpdate.Sdt, subs[0].Sdt)
 	suite.Require().Equal(subForUpdate.Edt, subs[0].Edt)
+}
+func (suite *TstHand) Test_04DeleteAllSubs() {
+	// пустая структура.
+	subForUpdate := models.Subscription{}
+
+	subM, err := json.Marshal(subForUpdate)
+	suite.Require().NoError(err)
+
+	requestBody := strings.NewReader(string(subM))
+
+	request := httptest.NewRequest(http.MethodPut, "/delete", requestBody)
+
+	// Создание ResponseRecorder
+	response := httptest.NewRecorder()
+	// вызов хандлера
+	DeleteSub(response, request)
+
+	res := response.Result()
+	defer res.Body.Close()
+
+	// HTTP put UPDATE должен вернуть http.StatusOK
+	suite.Require().Equal(http.StatusOK, res.StatusCode)
+
+	// проверяем на обнуление после DELETE с пустой структурой
+	db, err := dbase.NewPostgresPool(suite.ctx, models.DSN)
+	suite.Require().NoError(err)
+	defer db.DB.Close()
+
+	// запрос в БД на получения списка всех подписок
+	subs, err := db.ListSub(suite.ctx)
+	suite.Require().NoError(err)
+	// список должен быть пустой
+	suite.Require().Equal(0, len(subs))
+
 }

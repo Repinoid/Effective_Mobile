@@ -64,7 +64,7 @@ func Run(ctx context.Context) (err error) {
 	router.HandleFunc("/read", handlera.ReadSub).Methods("POST")
 	router.HandleFunc("/list", handlera.ListSub).Methods("GET")
 	router.HandleFunc("/update", handlera.UpdateSub).Methods("PUT")
-	// router.HandleFunc("/update", handlera.DeleteSub).Methods("DELETE")
+	router.HandleFunc("/delete", handlera.DeleteSub).Methods("DELETE")
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)

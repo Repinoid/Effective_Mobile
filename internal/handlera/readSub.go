@@ -83,7 +83,43 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 	defer db.DB.Close()
 
-	err = db.UpdateSub(req.Context(), readSub)
+	cTag, err := db.UpdateSub(req.Context(), readSub)
+	if err != nil {
+		rwr.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(rwr).Encode(err)
+		return
+	}
+
+	rowsAffected := cTag.RowsAffected()
+	ret := struct {
+		Name string
+		rows int64
+	}{"Обновлено записей", rowsAffected}
+
+	json.NewEncoder(rwr).Encode(ret)
+
+}
+
+func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
+
+	rwr.Header().Set("Content-Type", "application/json")
+
+	readSub := models.Subscription{}
+	err := json.NewDecoder(req.Body).Decode(&readSub)
+	if err != nil {
+		http.Error(rwr, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	if err != nil {
+		rwr.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(rwr).Encode(err)
+		return
+	}
+	defer db.DB.Close()
+
+	cTag, err := db.DeleteSub(req.Context(), readSub)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
@@ -92,6 +128,12 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(rwr).Encode(err)
+	rowsAffected := cTag.RowsAffected()
+	ret := struct {
+		Name string
+		rows int64
+	}{"Удалено записей", rowsAffected}
+
+	json.NewEncoder(rwr).Encode(ret)
 
 }

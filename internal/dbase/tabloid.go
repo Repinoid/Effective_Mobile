@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
 	"emobile/internal/models"
@@ -119,7 +120,6 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
 		"($2::int = 0 OR price = $2::int) AND " +
-		//"price = COALESCE($2::int, price) AND " +
 		"user_id=$3 AND " +
 		"start_date <= COALESCE($4, start_date) AND " +
 		"end_date >= COALESCE($5, end_date);"
@@ -144,7 +144,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 	return
 }
 
-func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (err error) {
+func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	// comments on ReadSub
 	var nilSdt, nilEdt any
@@ -163,7 +163,39 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 	order := "UPDATE subscriptions SET price=COALESCE($1, price), start_date=COALESCE($2, start_date), " +
 		"end_date=COALESCE($3, end_date) WHERE service_name=$4 AND user_id=$5;"
 
-	_, err = dataBase.DB.Exec(ctx, order, sub.Price, nilSdt, nilEdt, sub.Service_name, sub.User_id)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, nilSdt, nilEdt, sub.Service_name, sub.User_id)
+
+	return
+}
+
+func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
+
+	// comments on ReadSub
+	var nilSdt, nilEdt any
+	if sub.Sdt.IsZero() {
+		nilSdt = nil
+	} else {
+		nilSdt = sub.Sdt
+	}
+	if sub.Edt.IsZero() {
+		nilEdt = nil
+	} else {
+		nilEdt = sub.Edt
+	}
+
+	order := "DELETE FROM subscriptions WHERE " +
+		//"service_name = COALESCE($1, service_name) "
+		"($1 = '' OR service_name = $1) AND " +
+		"( ($2::int = 0 AND price != 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
+		"($3 = '' OR service_name = $3) AND " +
+		"start_date <= COALESCE($4, start_date) AND " +
+		"end_date <= COALESCE($5, end_date) ;"
+
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
+	if err != nil {
+		models.Logger.Error("Delete", "", err.Error())
+	}
+	//cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
 
 	return
 }
