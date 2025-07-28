@@ -3,6 +3,8 @@ package dbase
 import (
 	"emobile/internal/models"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func (suite *TstHand) Test_01AddSubFunc() {
@@ -43,9 +45,62 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	suite.Require().EqualValues(0, cTag.RowsAffected())
 	suite.Require().Contains(err.Error(), "SQLSTATE 23505")
 
+	// генерируем user_id
+	sub1.User_id = uuid.NewString()
+	// повторяем добавление записи, с иным user_id
+	cTag, err = suite.dataBase.AddSub(suite.ctx, sub1)
+	suite.Require().NoError(err)
+	// 1 - запись добавилась
+	suite.Require().EqualValues(1, cTag.RowsAffected())
+
 	// число подписок должно стать 2
 	subs, err = suite.dataBase.ListSub(suite.ctx)
 	suite.Require().NoError(err)
-	suite.Require().EqualValues(1, len(subs))
+	suite.Require().EqualValues(2, len(subs))
+
+	sub1.Service_name = "Мурзилка"
+	// повторяем добавление записи, с иным Service_name
+	cTag, err = suite.dataBase.AddSub(suite.ctx, sub1)
+	suite.Require().NoError(err)
+	// 1 - запись добавилась
+	suite.Require().EqualValues(1, cTag.RowsAffected())
+
+	// число подписок должно стать 3
+	subs, err = suite.dataBase.ListSub(suite.ctx)
+	suite.Require().NoError(err)
+	suite.Require().EqualValues(3, len(subs))
+
+	sub2 := sub1
+	sub2.Service_name = "Völkischer Beobachter"
+	// удаляем несуществующее ныне
+	cTag, err = suite.dataBase.DeleteSub(suite.ctx, sub2)
+	suite.Require().NoError(err)
+	// 0 - нету такого, вот и не удалилось
+	suite.Require().EqualValues(0, cTag.RowsAffected())
+
+	// удаляем самую первую запись - subG
+	cTag, err = suite.dataBase.DeleteSub(suite.ctx, subG)
+	suite.Require().NoError(err)
+	// 1 - норм
+	suite.Require().EqualValues(1, cTag.RowsAffected())
+
+	// 3-1 = 2
+	subs, err = suite.dataBase.ListSub(suite.ctx)
+	suite.Require().NoError(err)
+	suite.Require().EqualValues(2, len(subs))
+
+	// подымем Мурзиле цену
+	sub1.Price = 777
+	cTag, err = suite.dataBase.UpdateSub(suite.ctx, sub1)
+	suite.Require().NoError(err)
+	// 1 - норм, апгрейд
+	suite.Require().EqualValues(1, cTag.RowsAffected())
+
+	// количество не изменилось
+	subs, err = suite.dataBase.ListSub(suite.ctx)
+	suite.Require().NoError(err)
+	suite.Require().EqualValues(2, len(subs))
+
+	// так можно долго продолжать, надеюсь, достаточно тестов
 
 }

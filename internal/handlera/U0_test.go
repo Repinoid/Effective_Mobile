@@ -34,7 +34,7 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	// Запуск контейнера PostgreSQL
 	req := testcontainers.ContainerRequest{
 		Image:        "postgres:17",
-		Name:         "pcont",
+		Name:         "pcontH", // H - for Handlers
 		ExposedPorts: []string{"5432/tcp"},
 		Env: map[string]string{
 			"POSTGRES_PASSWORD": "testpass",
@@ -103,6 +103,5 @@ func TestHandlersSuite(t *testing.T) {
 	suite.Run(t, testBase)
 
 }
-
 
 // docker exec -it pcont psql -U testuser -d testdb

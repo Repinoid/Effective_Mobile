@@ -34,7 +34,7 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	// Запуск контейнера PostgreSQL
 	req := testcontainers.ContainerRequest{
 		Image:        "postgres:17",
-		Name:         "pcont",
+		Name:         "pcontB", // B - для Base
 		ExposedPorts: []string{"5432/tcp"},
 		Env: map[string]string{
 			"POSTGRES_PASSWORD": "testpass",
