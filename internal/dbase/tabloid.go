@@ -101,7 +101,7 @@ func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscr
 func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscription) (subs []models.ReadSubscription, err error) {
 
 	// sub.Sdt nilEdt тип time.Time.
-	// происходит полная муть если это передавать в Query из-за того что у них нет номального nil,
+	// происходит полная муть если это передавать в Query из-за того что у них нет обычного nil,
 	// определяем нулёвость по .IsZero() & прописываем в интерфейс, который и подсовываем в Query
 	var nilSdt, nilEdt any
 	if sub.Sdt.IsZero() {

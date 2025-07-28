@@ -42,6 +42,7 @@ func (suite *TstHand) Test_01AddSub() {
 		status int
 		reply  string
 	}{
+
 		{
 			name:   "Normaldu",
 			sub:    sub,
@@ -93,18 +94,6 @@ func (suite *TstHand) Test_01AddSub() {
 			reply:  `{"status":"bad START date"}`,
 		},
 		{
-			name: "Nice start date, year 2 digits",
-			sub: func() models.Subscription {
-				s := sub
-				s.Start_date = "01-10-22"
-				s.User_id = uuid.NewString()
-				s.End_date = ""
-				return s
-			}(),
-			status: http.StatusOK,
-			reply:  `{"status":"OK"}`,
-		},
-		{
 			name: "End before start",
 			sub: func() models.Subscription {
 				s := sub
@@ -116,6 +105,19 @@ func (suite *TstHand) Test_01AddSub() {
 			status: http.StatusBadRequest,
 			reply:  `{"status":"END date before START date"}`,
 		},
+		{
+			name: "Nice start date, year 2 digits",
+			sub: func() models.Subscription {
+				s := sub
+				s.Start_date = "01-10-22"
+				s.User_id = uuid.NewString()
+				s.End_date = ""
+				return s
+			}(),
+			status: http.StatusOK,
+			reply:  `{"status":"OK"}`,
+		},
+
 		{
 			name: "Wrong UUID",
 			sub: func() models.Subscription {
@@ -152,7 +154,11 @@ func (suite *TstHand) Test_01AddSub() {
 			defer res.Body.Close()
 
 			// Assert чтобы выполнилось сравнение tt.reply, string(resBody)
-			suite.Assert().Equal(tt.status, res.StatusCode)
+			if tt.status != res.StatusCode {
+				_ = res
+			}
+
+			suite.Require().Equal(tt.status, res.StatusCode)
 
 			// if tt.status != res.StatusCode {
 			// 	eM := errMessage{}

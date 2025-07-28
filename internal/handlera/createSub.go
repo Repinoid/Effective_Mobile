@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"emobile/internal/dbase"
 	"emobile/internal/models"
@@ -30,22 +29,6 @@ func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 // CreateSub создаёт новую запись о подписке
 func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
-
-	// telo, err := io.ReadAll(req.Body)
-	// if err != nil {
-	// 	rwr.WriteHeader(http.StatusBadRequest)
-	// 	fmt.Fprintf(rwr, `{"status":"StatusBadRequest"}`)
-	// 	return
-	// }
-	// defer req.Body.Close()
-
-	// sub := models.Subscription{}
-	// err = json.Unmarshal(telo, &sub)
-	// if err != nil {
-	// 	rwr.WriteHeader(http.StatusBadRequest) // с некорректным  значением возвращать http.StatusBadRequest.
-	// 	json.NewEncoder(rwr).Encode(err)
-	// 	return
-	// }
 
 	sub := models.Subscription{}
 	err := json.NewDecoder(req.Body).Decode(&sub)
@@ -81,29 +64,13 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		json.NewEncoder(rwr).Encode(errors.New("no start date"))
 		return
 	}
-	Start_date, err := parseDate(sub.Start_date)
-	if err != nil {
+	// если при непустой конечной дате она раньше начальной
+	if sub.End_date != "" && sub.Edt.Before(sub.Sdt) {
 		rwr.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rwr).Encode(err)
+		json.NewEncoder(rwr).Encode(errors.New("end date before start"))
 		return
 	}
-	sub.Sdt = Start_date
 
-	if sub.End_date != "" {
-		End_date, err := parseDate(sub.End_date)
-		if err != nil {
-			rwr.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rwr).Encode(err)
-			return
-		}
-		if End_date.Before(Start_date) {
-			rwr.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rwr).Encode(errors.New("end date before start"))
-			return
-
-		}
-		sub.Edt = End_date
-	}
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
@@ -126,31 +93,4 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	// `{"Message":"OK"}` - для унификации, если парсить возврат из хандлера по полю "Message"
 	fmt.Fprintf(rwr, `{"Message":"OK"}`)
 
-}
-
-func parseDate(date string) (t time.Time, err error) {
-	// парсим по день-месяц-год
-	t, err = time.Parse("02-01-2006", date)
-	// если ок - возвращаем
-	if err == nil {
-		return
-	}
-	// пробуем месяц-год
-	t, err = time.Parse("01-2006", date)
-	if err == nil {
-		return
-	}
-	// парсим по день-месяц-год
-	t, err = time.Parse("02-01-06", date)
-	// если ок - возвращаем
-	if err == nil {
-		return
-	}
-	// пробуем месяц-год
-	t, err = time.Parse("01-06", date)
-	// if err == nil {
-	// 	return
-	// }
-
-	return
 }

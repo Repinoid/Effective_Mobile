@@ -30,26 +30,6 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// если присутствуют даты, конвертируем их в timastamp и заполняем .Sdt .Еdt
-	if readSub.Start_date != "" {
-		Start_date, err := parseDate(readSub.Start_date)
-		if err != nil {
-			rwr.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rwr).Encode(err)
-			return
-		}
-		readSub.Sdt = Start_date
-	}
-	if readSub.End_date != "" {
-		End_date, err := parseDate(readSub.End_date)
-		if err != nil {
-			rwr.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rwr).Encode(err)
-			return
-		}
-		readSub.Edt = End_date
-	}
-
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
@@ -93,26 +73,6 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no user_id"))
 		return
-	}
-
-	// если присутствуют даты, конвертируем их в timastamp и заполняем .Sdt .Еdt
-	if readSub.Start_date != "" {
-		Start_date, err := parseDate(readSub.Start_date)
-		if err != nil {
-			rwr.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rwr).Encode(err)
-			return
-		}
-		readSub.Sdt = Start_date
-	}
-	if readSub.End_date != "" {
-		End_date, err := parseDate(readSub.End_date)
-		if err != nil {
-			rwr.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(rwr).Encode(err)
-			return
-		}
-		readSub.Edt = End_date
 	}
 
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
