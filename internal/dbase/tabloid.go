@@ -100,7 +100,8 @@ func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.ReadSubscr
 
 func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscription) (subs []models.ReadSubscription, err error) {
 
-	// sub.Sdt тип time.Time. происходит полная муть если это передавать в Query из-за того что у них нет номального nil,
+	// sub.Sdt nilEdt тип time.Time.
+	// происходит полная муть если это передавать в Query из-за того что у них нет номального nil,
 	// определяем нулёвость по .IsZero() & прописываем в интерфейс, который и подсовываем в Query
 	var nilSdt, nilEdt any
 	if sub.Sdt.IsZero() {
@@ -114,12 +115,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.ReadSubscripti
 		nilEdt = sub.Edt
 	}
 
-	// Так как price, start_date и end_date могут и не присутствовать в запросе, передаём их в order по COALESCE
-	// COALESCE возвращает первый ненулевой параметр. Например -
-	// COALESCE($2, price) - если price $2 не нуль, возвращается его значение
-	// и  получается обычное сравнение price = $2
-	// если $2=0 т.е. требование по price в запрос не передано, получается price = price
-	//  - всегда TRUE и этот пункт WHERE попросту игнорируется
+	// Так как start_date и end_date могут и не присутствовать в запросе, передаём их в order по COALESCE
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
 		"($2::int = 0 OR price = $2::int) AND " +
