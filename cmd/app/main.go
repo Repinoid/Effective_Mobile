@@ -15,9 +15,25 @@ import (
 	"syscall"
 	"time"
 
+	_ "emobile/docs" // docs генерируется Swag CLI
+
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
+// @title Subscription API
+// @version 1.0
+// @description API для управления подписками и проверки состояния БД
+// @termsOfService http://example.com/terms/
+
+// @contact.name API Support
+// @contact.email support@example.com
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8080
+// @BasePath /api/v1
 func main() {
 
 	ctx := context.Background()
@@ -59,12 +75,14 @@ func Run(ctx context.Context) (err error) {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/ping", handlera.DBPinger).Methods("GET")
+	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
 	router.HandleFunc("/add", handlera.CreateSub).Methods("POST")
 	router.HandleFunc("/read", handlera.ReadSub).Methods("POST")
 	router.HandleFunc("/list", handlera.ListSub).Methods("GET")
 	router.HandleFunc("/update", handlera.UpdateSub).Methods("PUT")
 	router.HandleFunc("/delete", handlera.DeleteSub).Methods("DELETE")
+
+	http.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)

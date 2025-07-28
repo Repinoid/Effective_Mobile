@@ -12,14 +12,19 @@ import (
 	"github.com/google/uuid"
 )
 
-// router.HandleFunc("/ping", handlera.DBPinger).Methods("GET")
-// DBPinger - Пинг базы данных
+// DBPinger godoc
+// @Summary Проверка соединения с БД
+// @Description Проверяет доступность и работоспособность базы данных
+// @Tags health
+// @Produce json
+// @Success 200 {object} DBStatusResponse
+// @Failure 500 {object} ErrorResponse
+// @Router / [get]
 func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 
 	err := dbase.Ping(req.Context())
 	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(rwr, `{"Error":"%v"}`, err)
+		http.Error(rwr, "Нет соединения с сервером", http.StatusInternalServerError)
 		return
 	}
 	rwr.WriteHeader(http.StatusOK)
