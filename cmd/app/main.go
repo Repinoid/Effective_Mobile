@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -62,7 +63,7 @@ func Run(ctx context.Context) (err error) {
 	}
 
 	router := mux.NewRouter()
-	router.HandleFunc("/ping", handlera.DBPinger).Methods("GET")
+	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
 	router.HandleFunc("/add", handlera.CreateSub).Methods("POST")
 	router.HandleFunc("/read", handlera.ReadSub).Methods("POST")
 	router.HandleFunc("/list", handlera.ListSub).Methods("GET")
@@ -73,6 +74,8 @@ func Run(ctx context.Context) (err error) {
 	// подключаем middleware логирования
 	router.Use(middlas.WithHTTPLogging)
 	//	router.Use(middlas.ErrorLoggerMiddleware)
+	// Добавление Swagger маршрута
+	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
