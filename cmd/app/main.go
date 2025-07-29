@@ -70,7 +70,7 @@ func Run(ctx context.Context) (err error) {
 
 	// подключаем middleware логирования
 	router.Use(middlas.WithHTTPLogging)
-	router.Use(middlas.ErrorLoggerMiddleware)
+	//	router.Use(middlas.ErrorLoggerMiddleware)
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
@@ -85,6 +85,7 @@ func Run(ctx context.Context) (err error) {
 
 	// Запускаем сервер в горутине
 	go func() {
+		fmt.Printf("\nServer started on %s\n\n", hostaport)
 		models.Logger.Info("Server started", "on", hostaport)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
