@@ -15,6 +15,7 @@ type Config struct {
 	DBHost     string
 	DBPort     int
 	AppPort    int
+	AppHost    string
 }
 
 var Configuration Config
@@ -51,6 +52,7 @@ func Load() (*Config, error) {
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     dbPort,
 		AppPort:    appPort,
+		AppHost:    getEnv("APP_HOST", "0.0.0.0"),
 	}, nil
 }
 

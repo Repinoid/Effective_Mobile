@@ -78,17 +78,25 @@ func Run(ctx context.Context) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	hostaport := fmt.Sprintf("%s:%d", config.Configuration.DBHost, config.Configuration.AppPort)
+	//hostaport := fmt.Sprintf("%s:%d", config.Configuration.DBHost, config.Configuration.AppPort)
+
+	// Используем AppHost (или 0.0.0.0) и AppPort для HTTP-сервера
+	serverAddr := fmt.Sprintf("%s:%d", config.Configuration.AppHost, config.Configuration.AppPort)
+
+	// srv := &http.Server{
+	// 	Addr:    hostaport,
+	// 	Handler: router,
+	// }
 
 	srv := &http.Server{
-		Addr:    hostaport,
+		Addr:    serverAddr,
 		Handler: router,
 	}
 
 	// Запускаем сервер в горутине
 	go func() {
-		fmt.Printf("\nServer started on %s\n\n", hostaport)
-		models.Logger.Info("Server started", "on", hostaport)
+		fmt.Printf("\nServer started on %s\n\n", serverAddr)
+		models.Logger.Info("Server started", "on", serverAddr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("Server error: %v", err)
 		}
