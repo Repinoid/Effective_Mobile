@@ -4,6 +4,7 @@ import (
 	//	"emobile/internal/config"
 	"emobile/internal/models"
 	"fmt"
+	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -13,14 +14,25 @@ import (
 func InitMigration(cfg Config) (err error) {
 
 	// пока для отладки
-	cfg.DBHost = "localhost"
+	//	cfg.DBHost = "localhost"
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
 	Configuration = cfg
 
+	// если сервер запущен в контейнере, в нём есть переменная окружения MIGRATIONS_PATH
+	enva, exists := os.LookupEnv("MIGRATIONS_PATH")
+	if exists {
+		models.MigrationsPath = enva
+	}
+
 	migrant, err := migrate.New(models.MigrationsPath, models.DSN)
 	if err != nil {
+		fileInfo, errf := os.Stat(models.MigrationsPath)
+		_ = fileInfo
+		if errf != nil {
+			models.Logger.Error("migrate", "DSN", models.DSN, "MigrationsPath", models.MigrationsPath, "err", errf)
+		}
 		return fmt.Errorf("failed to create migrate instance: %w", err)
 	}
 	defer migrant.Close()

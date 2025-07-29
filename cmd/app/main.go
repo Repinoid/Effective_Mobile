@@ -53,9 +53,11 @@ func Run(ctx context.Context) (err error) {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 	models.Logger.Debug("Config", "", *cfg)
-
+	
 	err = config.InitMigration(*cfg)
 	if err != nil {
+		models.Logger.Debug("sleep ...", "", *cfg)
+		time.Sleep(600 * time.Second)
 		return
 	}
 

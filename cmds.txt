@@ -2,3 +2,6 @@
 pgadmin список таблиц
 docker exec -it dbcont psql -U usera -d dbname -c "\dt"
 
+enter
+psql -h localhost -p 5432 -U usera -d dbname
+

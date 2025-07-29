@@ -8,7 +8,6 @@ import (
 	"emobile/internal/models"
 )
 
-
 // ListSub godoc
 // @Summary Получить список всех подписок
 // @Description Возвращает полный список всех подписок из базы данных
@@ -35,5 +34,14 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(rwr).Encode(subs)
+	if len(subs) != 0 {
+		json.NewEncoder(rwr).Encode(subs)
+	} else {
+		ret := models.RetStruct{
+			Name: "Нет записей в подписках",
+			Cunt: 0,
+		}
+		json.NewEncoder(rwr).Encode(ret)
+	}
+
 }

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"emobile/internal/models"
 	"os"
 	"strconv"
 
@@ -24,7 +24,7 @@ func Load() (*Config, error) {
 	// Load will read your env file(s) and load them into ENV for this process.
 	err := godotenv.Load("../../.env")
 	if err != nil {
-		log.Printf("Warning: couldn't load .env file: %v", err)
+		models.Logger.Debug("Warning: couldn't load .env ", "", err)
 		// It's important to note that it WILL NOT OVERRIDE an env variable
 		// that already exists - consider the .env file to set dev vars or sensible defaults.
 		// Не прерываем выполнение, так как переменные могут быть установлены в окружении
