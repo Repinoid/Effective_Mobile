@@ -35,7 +35,7 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 	poolConfig, err := pgxpool.ParseConfig(DSN)
 	//	poolConfig, err := pgxpool.ParseConfig(models.DSN)
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse pgxpool config: %w", err)
+		return nil, err
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -43,11 +43,11 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create pgxpool: %w", err)
+		return nil, err
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		return nil, fmt.Errorf("failed to ping database: %w", err)
+		return nil, err
 	}
 
 	dbStorage := &DBstruct{}

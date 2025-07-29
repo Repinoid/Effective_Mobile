@@ -69,7 +69,7 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
-	err = config.InitMigration(cfg)
+	err = config.InitMigration(suite.ctx, cfg)
 	if err != nil {
 		return
 	}
