@@ -75,9 +75,7 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
 	err = config.InitMigration(suite.ctx, cfg)
-	if err != nil {
-		return
-	}
+	suite.Require().NoError(err)
 
 	//	suite.DBEndPoint = fmt.Sprintf("postgres://testuser:testpass@%s:%s/testdb", host, port.Port())
 	suite.postgresContainer = postgresContainer

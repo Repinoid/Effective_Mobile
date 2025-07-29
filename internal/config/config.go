@@ -35,30 +35,30 @@ func Load() (*Config, error) {
 	}
 
 	// Парсим порт приложения
-	appPort, err := strconv.Atoi(getEnv("APP_PORT", "8080"))
+	appPort, err := strconv.Atoi(GetEnv("APP_PORT", "8080"))
 	if err != nil {
 		return nil, err
 	}
 
 	// Парсим порт БД
-	dbPort, err := strconv.Atoi(getEnv("DB_PORT", "5432"))
+	dbPort, err := strconv.Atoi(GetEnv("DB_PORT", "5432"))
 	if err != nil {
 		return nil, err
 	}
 
 	return &Config{
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", "postgres"),
-		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBUser:     GetEnv("DB_USER", "postgres"),
+		DBPassword: GetEnv("DB_PASSWORD", ""),
+		DBName:     GetEnv("DB_NAME", "postgres"),
+		DBHost:     GetEnv("DB_HOST", "localhost"),
 		DBPort:     dbPort,
 		AppPort:    appPort,
-		AppHost:    getEnv("APP_HOST", "0.0.0.0"),
+		AppHost:    GetEnv("APP_HOST", "0.0.0.0"),
 	}, nil
 }
 
-// getEnv возвращает значение переменной окружения или значение по умолчанию
-func getEnv(key, defaultValue string) string {
+// GetEnv возвращает значение переменной окружения или значение по умолчанию
+func GetEnv(key, defaultValue string) string {
 	value := os.Getenv(key)
 	if value == "" {
 		return defaultValue
