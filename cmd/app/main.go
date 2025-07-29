@@ -4,7 +4,6 @@ import (
 	"context"
 	"emobile/internal/config"
 	"emobile/internal/handlera"
-	"emobile/internal/middlas"
 	"emobile/internal/models"
 	"flag"
 	"fmt"
@@ -17,9 +16,22 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	httpSwagger "github.com/swaggo/http-swagger"
+	_ "github.com/swaggo/http-swagger" // Добавляем это
+	"github.com/swaggo/http-swagger/v2"
+	// И это
 )
 
+// @title Subscription Service API
+// @version 1.0
+// @description API для управления подписками
+
+// main godoc
+// @Summary Запуск приложения
+// @Description Основная функция запуска сервиса подписок
+// @Produce json
+// @Param debug query boolean false "Включить debug-логирование" default(false)
+// @Success 200 {string} string "Сервис запущен"
+// @Failure 500 {string} string "Ошибка сервера"
 func main() {
 
 	ctx := context.Background()
@@ -47,6 +59,14 @@ func main() {
 
 }
 
+// Run godoc
+// @Summary Запуск сервера API
+// @Description Инициализирует конфигурацию и запускает HTTP-сервер с роутингом
+// @Accept json
+// @Produce json
+// @Param ctx query string false "Контекст выполнения"
+// @Success 200 {string} string "Сервер запущен"
+// @Failure 500 {string} string "Ошибка сервера"
 func Run(ctx context.Context) (err error) {
 
 	cfg, err := config.Load()
@@ -72,10 +92,70 @@ func Run(ctx context.Context) (err error) {
 	router.HandleFunc("/summa", handlera.SumSub).Methods("POST")
 
 	// подключаем middleware логирования
-	router.Use(middlas.WithHTTPLogging)
+	//	router.Use(middlas.WithHTTPLogging)
 	//	router.Use(middlas.ErrorLoggerMiddleware)
+
+	// router.HandleFunc("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
+	// 	http.ServeFile(w, r, "./docs/swagger.json")
+	// })
+
 	// Добавление Swagger маршрута
-	router.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
+
+	// router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+	// 	httpSwagger.URL("/swagger/doc.json"), // Явный путь
+	// ))
+
+	router.HandleFunc("/swagger/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+		data, _ := os.ReadFile("./docs/swagger.json")
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(data)
+	})
+
+	// Обработчик для Swagger UI
+	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("/swagger/swagger.json"), // Указываем путь к JSON
+		httpSwagger.DocExpansion("none"),         // Опционально: схлопывать документацию
+		httpSwagger.DefaultModelsExpandDepth(1),  // Опционально: глубина моделей
+	))
+
+	// router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+	// 	httpSwagger.URL("/swagger/swagger.json"), // Явно указываем имя файла
+	// ))
+
+	// //router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
+
+	// router.HandleFunc("/test-swagger", func(w http.ResponseWriter, r *http.Request) {
+	// 	data, _ := os.ReadFile("./docs/swagger.json")
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	w.Write(data)
+	// })
+
+	// router.HandleFunc("/swagger/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+	// 	data, err := os.ReadFile("./docs/swagger.json")
+	// 	if err != nil {
+	// 		log.Printf("Ошибка чтения файла: %v", err)
+	// 		http.Error(w, "Not Found", 404)
+	// 		return
+	// 	}
+	// 	w.Header().Set("Content-Type", "application/json")
+	// 	w.Write(data)
+	// })
+
+	// router.HandleFunc("/swa", func(w http.ResponseWriter, r *http.Request) {
+	// 	absPath, _ := filepath.Abs(".")
+	// 	models.Logger.Info("Отдаю swagger.json", "path", absPath)
+	// 	ret := models.RetStruct{
+	// 		Name: absPath,
+	// 		Cunt: 0,
+	// 	}
+	// 	json.NewEncoder(w).Encode(ret)
+	// 	//http.ServeFile(w, r, absPath)
+	// })
+
+	// router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+	// 	httpSwagger.URL("/docs/swagger.json"), // Явно указываем путь
+	// 	//httpSwagger.URL("/swagger/doc.json"), // Явно указываем путь
+	// ))
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)

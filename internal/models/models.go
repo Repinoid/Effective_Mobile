@@ -7,8 +7,9 @@ import (
 
 var (
 	Logger         *slog.Logger
-	MigrationsPath = "file://../../migrations"
-	DSN            = ""
+	MigrationsPath = "file://migrations"
+	// MigrationsPath = "file://../../migrations"
+	DSN = ""
 )
 
 type Subscription struct {
