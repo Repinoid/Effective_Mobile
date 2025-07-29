@@ -30,6 +30,11 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	suite.ctx = context.Background()
 	suite.t = time.Now()
 
+	//MigrationsPath = "file://migrations"
+	models.MigrationsPath = "file://../../migrations"
+	//err := godotenv.Load(models.EnvPath)
+	models.EnvPath = "../../.env"
+
 	// ***************** POSTGREs part begin ************************************
 	// Запуск контейнера PostgreSQL
 	req := testcontainers.ContainerRequest{

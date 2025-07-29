@@ -30,6 +30,9 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	suite.ctx = context.Background()
 	suite.t = time.Now()
 
+	models.MigrationsPath = "file://../../migrations"
+	models.EnvPath = "../../.env"
+
 	// ***************** POSTGREs part begin ************************************
 	// Запуск контейнера PostgreSQL
 	req := testcontainers.ContainerRequest{

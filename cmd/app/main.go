@@ -16,9 +16,8 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
-	_ "github.com/swaggo/http-swagger" // Добавляем это
-	"github.com/swaggo/http-swagger/v2"
-	// И это
+	//	_ "github.com/swaggo/http-swagger"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // @title Subscription Service API
@@ -115,7 +114,6 @@ func Run(ctx context.Context) (err error) {
 	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
 		httpSwagger.URL("/swagger/swagger.json"), // Указываем путь к JSON
 		httpSwagger.DocExpansion("none"),         // Опционально: схлопывать документацию
-		httpSwagger.DefaultModelsExpandDepth(1),  // Опционально: глубина моделей
 	))
 
 	// router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(

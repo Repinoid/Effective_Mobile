@@ -23,7 +23,7 @@ var Configuration Config
 func Load() (*Config, error) {
 	// Загружаем .env файл
 	// Load will read your env file(s) and load them into ENV for this process.
-	err := godotenv.Load("./.env")
+	err := godotenv.Load(models.EnvPath)
 	// err := godotenv.Load("../../.env")
 	if err != nil {
 		models.Logger.Debug("Warning: couldn't load .env ", "", err)

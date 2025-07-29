@@ -9,6 +9,7 @@ var (
 	Logger         *slog.Logger
 	MigrationsPath = "file://migrations"
 	// MigrationsPath = "file://../../migrations"
+	EnvPath = "./.env"
 	DSN = ""
 )
 
