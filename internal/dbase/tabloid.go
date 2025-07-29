@@ -349,13 +349,18 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 //   - Если end_date IS NULL, подписка не будет включена в сумму
 func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (summa int64, err error) {
 
+	// // если конечная дата подписки не задана - устанавляваем в максимально возможное значение
+	// // Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
+	if sub.Edt.IsZero() {
+		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
+	}
+
 	order := "SELECT SUM(price) FROM subscriptions WHERE " +
-		"service_name=$1 AND " +
-		"user_id=$2 AND " +
-		"start_date >= $3 AND " +
-		"end_date <= $4 ;"
-		// для захвата диапазона стартовая дата должна быть БОЛЬШЕ чем переданная,
-		// конечная - меньше
+		"($1 = '' OR service_name = $1) AND " +
+		"($2 = '' OR user_id = $2) AND " +
+		"($3 >=  start_date AND $3 <= end_date) OR " +
+		"($4 >=  start_date AND $4 <= end_date)             ;"
+		// для включения в сумму диапазоны подписки и запроса должны пересекаться
 
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
 	summa = 0

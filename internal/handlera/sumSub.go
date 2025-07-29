@@ -28,9 +28,8 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// все поля кроме цены должны быть определены
-	if readSub.Service_name == "" ||
-		readSub.User_id == "" ||
+	// должны быть определены Service_name или User_id, и диапазон дат
+	if (readSub.Service_name == "" && readSub.User_id == "") ||
 		readSub.Edt.IsZero() || readSub.Sdt.IsZero() {
 		http.Error(rwr, "не все данные указаны", http.StatusBadRequest)
 		return

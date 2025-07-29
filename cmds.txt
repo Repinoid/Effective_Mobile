@@ -7,3 +7,6 @@ psql -h localhost -p 5432 -U usera -d dbname
 
 nc -zv localhost 5432
 
+go test -p 1 ./...
+
+swag init -g cmd/app/main.go --output ./docs --parseDependency

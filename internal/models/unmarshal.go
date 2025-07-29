@@ -28,6 +28,7 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 	if err != nil {
 		return err
 	}
+
 	sub.Start_date = temp.StartDate
 	sub.End_date = temp.EndDate
 

@@ -1,2 +1,0 @@
-host all all all md5
-local all all trust
