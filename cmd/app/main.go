@@ -69,7 +69,8 @@ func Run(ctx context.Context) (err error) {
 	router.HandleFunc("/summa", handlera.SumSub).Methods("POST")
 
 	// подключаем middleware логирования
-	router.Use(middlas.WithLogging)
+	router.Use(middlas.WithHTTPLogging)
+	router.Use(middlas.ErrorLoggerMiddleware)
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)

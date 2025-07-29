@@ -20,26 +20,42 @@ func ErrorLoggerMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-// logErrResponseWriter - обертка для http.ResponseWriter для перехвата ошибок
 type logErrResponseWriter struct {
 	http.ResponseWriter
 	request      *http.Request
 	errorMessage string
 	statusCode   int
+	wroteHeader  bool // Флаг, чтобы отслеживать, был ли вызван WriteHeader
 }
 
 // WriteHeader перехватывает статус код ответа
 func (lrw *logErrResponseWriter) WriteHeader(code int) {
-	lrw.statusCode = code
-	lrw.ResponseWriter.WriteHeader(code)
+	if !lrw.wroteHeader {
+		lrw.statusCode = code
+		lrw.wroteHeader = true
+		lrw.ResponseWriter.WriteHeader(code)
+	}
 }
 
 // Write перехватывает запись тела ответа
 func (lrw *logErrResponseWriter) Write(b []byte) (int, error) {
+	if !lrw.wroteHeader {
+		lrw.WriteHeader(http.StatusOK) // Стандартный статус, если WriteHeader не вызван
+	}
+
+	// Если статус указывает на ошибку, сохраняем сообщение
 	if lrw.statusCode >= 400 {
 		lrw.errorMessage = string(b)
 	}
-	return lrw.ResponseWriter.Write(b)
+
+	n, err := lrw.ResponseWriter.Write(b)
+
+	// Логируем ошибку после записи (если она есть)
+	if lrw.statusCode >= 400 && lrw.errorMessage != "" {
+		lrw.logError()
+	}
+
+	return n, err
 }
 
 // logError логирует ошибку
@@ -57,9 +73,4 @@ func (lrw *logErrResponseWriter) logError() {
 		)
 
 	}
-}
-
-// Ensure logging happens when the response is finished
-func (lrw *logErrResponseWriter) finish() {
-	lrw.logError()
 }
