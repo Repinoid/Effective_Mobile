@@ -25,6 +25,7 @@ FROM alpine AS runner
 # копируем сбилденный /wd/cmd/server/servak в корень / runner
 COPY --from=builder /wd/cmd/server/servak / 
 COPY  migrations ./migrations
+COPY  docs ./docs
 COPY  .env .
 
 # открываем порт 

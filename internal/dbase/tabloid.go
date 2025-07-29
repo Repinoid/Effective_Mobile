@@ -204,8 +204,9 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 
 func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (summa int64, err error) {
 
-	// // если конечная дата подписки не задана - устанавляваем в максимально возможное значение
-	// // Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
+	//  если конечная дата подписки не задана - устанавлiваем в максимально возможное значение
+	//
+	//  Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
 	if sub.Edt.IsZero() {
 		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
