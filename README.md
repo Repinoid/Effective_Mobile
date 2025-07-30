@@ -14,9 +14,9 @@
 ## API документировано с использованием Swagger (OpenAPI 3.0). 
 
 **Доступ к документации доступен по следующим путям:**
--`/swagger`- HTML-интерфейс Swagger UI
--`/swagger.json` - Спецификация API в формате JSON
--`/swagger.yaml` - Спецификация API в формате YAML
+- `/swagger`- HTML-интерфейс Swagger UI
+- `/swagger.json` - Спецификация API в формате JSON
+- `/swagger.yaml` - Спецификация API в формате YAML
 
 # Для локального запуска документации:
 
