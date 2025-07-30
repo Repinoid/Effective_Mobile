@@ -81,7 +81,6 @@ func Run(ctx context.Context) (err error) {
 		time.Sleep(900 * time.Second)
 		return
 	}
-	
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
@@ -94,7 +93,7 @@ func Run(ctx context.Context) (err error) {
 
 	// подключаем middleware логирования
 	router.Use(middlas.WithHTTPLogging)
-	//	router.Use(middlas.ErrorLoggerMiddleware)
+	router.Use(middlas.ErrorLoggerMiddleware)
 
 	router.HandleFunc("/swagger/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		data, _ := os.ReadFile("./docs/swagger.json")

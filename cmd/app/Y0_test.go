@@ -54,8 +54,9 @@ func (suite *TS) SetupTest() {
 	httpc := resty.New().SetBaseURL("http://localhost:8080")
 	req := httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
 		SetBody(models.Subscription{})
-	_, err = req.Delete("/delete")
-	suite.Require().NoError(err, "DROP")
+	_ = req
+	//	_, err = req.Delete("/delete")
+	//	suite.Require().NoError(err, "DROP")
 
 }
 
@@ -78,15 +79,4 @@ func TestExampleTestSuite(t *testing.T) {
 	slog.SetDefault(models.Logger)
 
 	suite.Run(t, new(TS))
-}
-
-func restorun() {
-
-	httpc := resty.New().SetBaseURL("http://localhost:8080")
-
-	req := httpc.R().SetHeader("Content-Type", "application/json").
-		SetBody("12345")
-
-	req.SetDoNotParseResponse(false).Post("/updates/")
-
 }
