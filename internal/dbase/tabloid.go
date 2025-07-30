@@ -214,7 +214,9 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 		"($1 = '' OR service_name = $1) AND " +
 		"($2 = '' OR user_id = $2) AND " +
 		"($3 >=  start_date AND $3 <= end_date) OR " +
-		"($4 >=  start_date AND $4 <= end_date)             ;"
+		"($4 >=  start_date AND $4 <= end_date) OR " +
+		"(start_date >=$3  AND start_date <= $4 ) OR " +
+		"(end_date >=$3  AND end_date <= $4 ) ;"
 		// для включения в сумму диапазоны подписки и запроса должны пересекаться
 
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
