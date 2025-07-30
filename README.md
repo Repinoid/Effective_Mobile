@@ -65,7 +65,7 @@ REST API для управления подписками пользовател
 ## Тестирование
 
 ### Unit-тесты
-```bash
+
 # Тесты функций БД
 go test ./internal/dbase
 
@@ -75,28 +75,24 @@ go test ./internal/handlera
 
 ### Интеграционные тесты
 Запустите сервис:
-
-bash
 docker compose build --no-cache && docker compose up -d
+
 # или
 docker compose up -d
 Выполните тесты:
 
-bash
 go test ./cmd/app -count=1
-Технологии тестирования
-Фреймворк: github.com/stretchr/testify/suite
 
-Тестовые контейнеры: github.com/testcontainers/testcontainers-go
+## Технологии тестирования
+- Фреймворк: github.com/stretchr/testify/suite
+- Тестовые контейнеры: github.com/testcontainers/testcontainers-go
 
-Вспомогательные сервисы:
+## Вспомогательные сервисы:
+- PgAdmin (доступен как третий контейнер)
+- PgBouncer (не используется в текущей конфигурации)
 
-PgAdmin (доступен как третий контейнер)
-
-PgBouncer (не используется в текущей конфигурации)
-
-CI/CD
-Готов шаблон GitHub Actions из другого проекта (может быть подключен при необходимости)
+##CI/CD
+- Готов шаблон GitHub Actions из другого проекта (может быть подключен при необходимости)
 
 
 
