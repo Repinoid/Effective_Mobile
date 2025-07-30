@@ -66,76 +66,35 @@ REST API для управления подписками пользовател
 
 ### Unit-тесты
 
-# Тесты функций БД
-go test ./internal/dbase
+## Тесты функций БД
+`go test ./internal/dbase`
 
-# Тесты HTTP-хендлеров
-go test ./internal/handlera
+## Тесты HTTP-хендлеров
+`go test ./internal/handlera`
 
 
 ### Интеграционные тесты
 Запустите сервис:
-docker compose build --no-cache && docker compose up -d
+`docker compose build --no-cache && docker compose up -d`
 
-# или
-docker compose up -d
+## или
+`docker compose up -d`
+
 Выполните тесты:
 
-go test ./cmd/app -count=1
+`go test ./cmd/app -count=1`
 
 ## Технологии тестирования
-- Фреймворк: github.com/stretchr/testify/suite
-- Тестовые контейнеры: github.com/testcontainers/testcontainers-go
+- Фреймворк: `github.com/stretchr/testify/suite`
+- Тестовые контейнеры: `github.com/testcontainers/testcontainers-go`
 
 ## Вспомогательные сервисы:
-- PgAdmin (доступен как третий контейнер)
-- PgBouncer (не используется в текущей конфигурации)
+- `PgAdmin` (доступен как третий контейнер)
+- `PgBouncer` (не используется в текущей конфигурации)
 
 ##CI/CD
 - Готов шаблон GitHub Actions из другого проекта (может быть подключен при необходимости)
 
-
-
-
-
-
-
-
-
-
-
-
-
-Допущения<hr>
-
-1. ID пользователя в формате UUID - надо проверять на соответствие<br>
-2. Комбинация user_id & service_name уникальна. Один user_id может подписаться на service_name один раз, если надо ещё - через UPDATE<br>
-3. CRUDL. <br>
-POST **/add**  -  добавить в таблицу запись о подписке<br>
-POST **/read** -  Выдаёт список запросов<br>
-В запросе обязательны только user_id & service_name, наличие остальных параметров (дат) выступает как маска start_date <= дата <= end_date <br>
-PUT **/update**  -  обязательны user_id & service_name, остальное - обновляет запись<br>
-DELETE **/delete**  -  поля в JSON запроса - маска. Скажем, если JSON пустой - удалит ***всё***<br><br>
-GET **/list**  - вернёт список  всех подписок<br>
-POST **/sum** - суммарная стоимость подписок, фильтрация по названию и/или user_id и диапазону дат <br>
-<hr>
-
-Код писался параллельно с тестами, *github.com/stretchr/testify/suite*<br>
-База для тестов поднимается *github.com/testcontainers/testcontainers-go*<br>
-
-***go test ./internal/dbase*** тест функций БД<br>
-***go test ./internal/handlera*** тест HTTP хандлеров БД<br>
-
-Для интеграционных тестов необходимо собрать проект и запустить сервис <br>
-***docker compose build --no-cache && docker compose up -d***<br>
-или просто запустить<br>
-***docker compose up -d***<br>
-
-***go test ./cmd/app -count=1***<br>
-
-Третьим контейнером запускается ***PgAdmin***, ***PgBouncer*** не стал подключать<br>
-
-Можно ещё и CD github actions внедрить, шаблон есть из другого проекта<br>
 
 ```
 Тестовое задание Junior Golang Developer
