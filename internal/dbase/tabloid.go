@@ -210,8 +210,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	if sub.Edt.IsZero() {
 		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
-
-	order := "SELECT SUM(price) FROM subscriptions WHERE " +
+	order := "SELECT COALESCE(SUM(price), 0) FROM subscriptions WHERE " +
 		"($1 = '' OR service_name = $1) AND " +
 		"($2 = '' OR user_id = $2) AND " +
 		"($3 >=  start_date AND $3 <= end_date) OR " +

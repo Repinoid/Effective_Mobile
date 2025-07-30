@@ -10,7 +10,7 @@ import (
 )
 
 var sub = models.Subscription{
-	Service_name: "Жейминь Жибао1",
+	Service_name: "Жейминь Жибао",
 	Price:        400,
 	//	User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
 	Start_date: "01-02-2020",
@@ -66,6 +66,17 @@ func (suite *TS) Test_01() {
 	// проверим пару полей на соответствие
 	suite.Require().Equal(subs[0].Service_name, sub1.Service_name)
 	suite.Require().Equal(subs[0].User_id, sub1.User_id)
+
+	sub2 := sub
+	sub2.Start_date = "01-02-2010"
+	sub2.End_date = "01-02-2019"
+	req = httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
+		SetBody(sub2)
+	resp, err = req.Post("/summa")
+	suite.Require().NoError(err, "summa")
+	suite.Require().Equal(http.StatusOK, resp.StatusCode())
+
+	suite.Require().JSONEq(`{"Cunt":0, "Name":"Сумма подписок"}`, resp.String())
 
 }
 
