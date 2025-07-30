@@ -64,7 +64,7 @@ REST API для управления подписками пользовател
 
 ## Тестирование
 
-### Unit-тесты
+## Unit-тесты
 
 ### Тесты функций БД
 `go test ./internal/dbase`
@@ -73,14 +73,14 @@ REST API для управления подписками пользовател
 `go test ./internal/handlera`
 
 
-### Интеграционные тесты
+## Интеграционные тесты
 Запустите сервис:
 `docker compose build --no-cache && docker compose up -d`
 
 ### или
 `docker compose up -d`
 
-Выполните тесты:
+### Выполните тесты:
 
 `go test ./cmd/app -count=1`
 
