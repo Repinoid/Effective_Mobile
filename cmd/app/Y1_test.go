@@ -87,6 +87,27 @@ func (suite *TS) Test_01() {
 
 	suite.Require().JSONEq(`{"Cunt":400, "Name":"Сумма подписок"}`, resp.String())
 
+	// внесём подписку в щастливом будущем
+	sub3 := sub2
+	sub3.Start_date = "01-02-2040"
+	sub3.End_date = "01-02-2050"
+	sub3.Service_name = "Партизан Приморья"
+	sub3.User_id = ui
+	req = httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
+		SetBody(sub3)
+	resp, err = req.Post("/add")
+	suite.Require().NoError(err, "req.Post add)")
+	suite.Require().Equal(http.StatusOK, resp.StatusCode())
+	suite.Require().JSONEq(`{"Cunt":1, "Name":"Внесено записей"}`, resp.String())
+
+	req = httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
+		SetBody(sub2)
+	resp, err = req.Post("/summa")
+	suite.Require().NoError(err, "summa")
+	suite.Require().Equal(http.StatusOK, resp.StatusCode())
+	// должно быть 400, будущее не в счёт
+	suite.Require().JSONEq(`{"Cunt":400, "Name":"Сумма подписок"}`, resp.String())
+
 }
 
 func (suite *TS) TestExample1() {
