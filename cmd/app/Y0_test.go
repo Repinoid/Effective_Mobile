@@ -56,8 +56,8 @@ func (suite *TS) SetupTest() {
 		SetBody(models.Subscription{})
 	_ = req
 	// раскомментировать если надо обунулять базу перед тестами
-	// _, err = req.Delete("/delete")
-	// suite.Require().NoError(err, "DROP")
+	_, err = req.Delete("/delete")
+	suite.Require().NoError(err, "DROP")
 
 }
 

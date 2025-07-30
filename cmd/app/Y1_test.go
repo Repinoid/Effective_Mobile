@@ -38,16 +38,34 @@ func (suite *TS) Test_01() {
 	suite.Require().NoError(err, "req.Post read)")
 	suite.Require().Equal(http.StatusOK, resp.StatusCode())
 
+	// размаршаллим полученное. это слайс подписок с одной записью
 	subs := []models.Subscription{}
 	err = json.Unmarshal([]byte(resp.String()), &subs)
 	suite.Require().NoError(err, "bad unmarshal )")
 
+	// запись должна быть одна
 	suite.Require().Equal(1, len(subs))
 
 	// проверим пару полей на соответствие
 	suite.Require().Equal(subs[0].Service_name, sub1.Service_name)
 	suite.Require().Equal(subs[0].User_id, sub1.User_id)
 
+	resp, err = req.Get("/list")
+	suite.Require().NoError(err, "req.Post list)")
+	suite.Require().Equal(http.StatusOK, resp.StatusCode())
+
+	// размаршаллим полученное.
+	// это опять же слайс подписок с одной записью
+	// ЕСЛИ обнуляли таблицу в SetupTest !!!
+	subs = []models.Subscription{}
+	err = json.Unmarshal([]byte(resp.String()), &subs)
+	suite.Require().NoError(err, "bad unmarshal )")
+	// запись должна быть одна
+	suite.Require().Equal(1, len(subs))
+
+	// проверим пару полей на соответствие
+	suite.Require().Equal(subs[0].Service_name, sub1.Service_name)
+	suite.Require().Equal(subs[0].User_id, sub1.User_id)
 
 }
 
