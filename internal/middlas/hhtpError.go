@@ -62,7 +62,7 @@ func (lrw *logErrResponseWriter) Write(b []byte) (int, error) {
 func (lrw *logErrResponseWriter) logError() {
 	if lrw.statusCode >= 400 && lrw.errorMessage != "" {
 
-		models.Logger.Debug("Ошибка вышла",
+		models.Logger.Error("Ошибка вышла",
 			"Time", time.Now().Format(time.RFC3339),
 			"Method", lrw.request.Method,
 			"uri", lrw.request.URL.Path,

@@ -55,8 +55,9 @@ func (suite *TS) SetupTest() {
 	req := httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
 		SetBody(models.Subscription{})
 	_ = req
-	//	_, err = req.Delete("/delete")
-	//	suite.Require().NoError(err, "DROP")
+	// раскомментировать если надо обунулять базу перед тестами
+	// _, err = req.Delete("/delete")
+	// suite.Require().NoError(err, "DROP")
 
 }
 

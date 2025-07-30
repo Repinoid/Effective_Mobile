@@ -2,32 +2,52 @@ package main
 
 import (
 	"emobile/internal/models"
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/google/uuid"
 )
 
 var sub = models.Subscription{
 	Service_name: "Жейминь Жибао1",
 	Price:        400,
-	User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-	Start_date:   "01-02-2020",
-	End_date:     "11-2029",
+	//	User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+	Start_date: "01-02-2020",
+	End_date:   "11-2029",
 }
 
 func (suite *TS) Test_01() {
 
+	// создаём случайны User_id чтобы не было конфликтов
+	ui := uuid.NewString()
+	sub1 := sub
+	sub1.User_id = ui
+
 	httpc := resty.New().SetBaseURL("http://localhost:8080")
 
 	req := httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
-		SetBody(sub)
+		SetBody(sub1)
 
 	resp, err := req.Post("/add")
 	suite.Require().NoError(err, "req.Post add)")
+	suite.Require().Equal(http.StatusOK, resp.StatusCode())
+	suite.Require().JSONEq(`{"Cunt":1, "Name":"Внесено записей"}`, resp.String())
 
+	resp, err = req.Post("/read")
+	suite.Require().NoError(err, "req.Post read)")
 	suite.Require().Equal(http.StatusOK, resp.StatusCode())
 
-	suite.Require().JSONEq(`{"Cunt":1, "Name":"Внесено записей"}`, resp.String())
+	subs := []models.Subscription{}
+	err = json.Unmarshal([]byte(resp.String()), &subs)
+	suite.Require().NoError(err, "bad unmarshal )")
+
+	suite.Require().Equal(1, len(subs))
+
+	// проверим пару полей на соответствие
+	suite.Require().Equal(subs[0].Service_name, sub1.Service_name)
+	suite.Require().Equal(subs[0].User_id, sub1.User_id)
+
 
 }
 
