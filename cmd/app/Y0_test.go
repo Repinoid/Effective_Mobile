@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-resty/resty/v2"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
 )
@@ -22,16 +23,6 @@ type TS struct {
 	ctx context.Context
 }
 
-// var sub = models.Subscription{
-// 	Service_name: "Yandex Plus",
-// 	Price:        400,
-// 	User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-// 	Start_date:   "01-02-2025",
-// 	End_date:     "11-2025",
-// }
-
-// Make sure that VariableThatShouldStartAtFive is set to five
-// before each test
 func (suite *TS) SetupTest() {
 	suite.ctx = context.Background()
 	suite.t = time.Now()
@@ -57,7 +48,7 @@ func (suite *TS) SetupTest() {
 	err = config.CheckBase(suite.ctx, models.DSN)
 	suite.Require().NoError(err, "No DataBase connection")
 	err = config.InitMigration(suite.ctx, cfg)
-	suite.Require().NoError(err, "No DataBase connection")
+	suite.Require().NoError(err, "Миграция не прошла")
 
 }
 
@@ -80,4 +71,16 @@ func TestExampleTestSuite(t *testing.T) {
 	slog.SetDefault(models.Logger)
 
 	suite.Run(t, new(TS))
+}
+
+func restorun() {
+
+	httpc := resty.New().SetBaseURL("http://localhost:8080")
+	
+
+	req := httpc.R().SetHeader("Content-Type", "application/json").
+		SetBody("12345")
+
+	req.SetDoNotParseResponse(false).Post("/updates/")
+
 }
