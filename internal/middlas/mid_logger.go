@@ -42,7 +42,6 @@ func WithHTTPLogging(next http.Handler) http.Handler {
 			ResponseWriter: w, // встраиваем оригинальный http.ResponseWriter
 			responseData:   responseData,
 		}
-		next.ServeHTTP(&lw, r)
 
 		duration := time.Since(start)
 
@@ -54,6 +53,9 @@ func WithHTTPLogging(next http.Handler) http.Handler {
 			"size", responseData.size, // получаем перехваченный размер ответа
 			"UserAgent", r.UserAgent(),
 		)
+
+		next.ServeHTTP(&lw, r)
+
 	}
 
 	return http.HandlerFunc(loggedFunc)

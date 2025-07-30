@@ -50,6 +50,13 @@ func (suite *TS) SetupTest() {
 	err = config.InitMigration(suite.ctx, cfg)
 	suite.Require().NoError(err, "Миграция не прошла")
 
+	// delete все записи - маска с пустой структурой models.Subscription{}
+	httpc := resty.New().SetBaseURL("http://localhost:8080")
+	req := httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
+		SetBody(models.Subscription{})
+	_, err = req.Delete("/delete")
+	suite.Require().NoError(err, "DROP")
+
 }
 
 func (suite *TS) BeforeTest(suiteName, testName string) {
@@ -76,7 +83,6 @@ func TestExampleTestSuite(t *testing.T) {
 func restorun() {
 
 	httpc := resty.New().SetBaseURL("http://localhost:8080")
-	
 
 	req := httpc.R().SetHeader("Content-Type", "application/json").
 		SetBody("12345")

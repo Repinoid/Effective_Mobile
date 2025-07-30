@@ -33,4 +33,4 @@ COPY  .env .
 EXPOSE 8080 
 
 # запускаем исполняемый файл servak
-CMD ["./servak"] 
+CMD ["./servak", "-debug"] 

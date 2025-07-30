@@ -12,6 +12,9 @@
             "mode": "auto",
             "program": "${fileDirname}",
             "cwd": "${workspaceFolder}", // Здесь задаем рабочую директорию
+             "args": [
+                "-debug",
+            ]
         }
     ]
 }

@@ -105,8 +105,7 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		Cunt: cTag.RowsAffected(),
 	}
 
-	json.NewEncoder(rwr).Encode(ret)
-
 	rwr.WriteHeader(http.StatusOK)
+	json.NewEncoder(rwr).Encode(ret)
 
 }

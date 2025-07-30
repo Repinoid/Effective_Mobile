@@ -2,14 +2,13 @@ package main
 
 import (
 	"emobile/internal/models"
-	"encoding/json"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
 )
 
 var sub = models.Subscription{
-	Service_name: "Yandex Plus",
+	Service_name: "Жейминь Жибао1",
 	Price:        400,
 	User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
 	Start_date:   "01-02-2020",
@@ -28,10 +27,7 @@ func (suite *TS) Test_01() {
 
 	suite.Require().Equal(http.StatusOK, resp.StatusCode())
 
-	subM, err := json.Marshal(sub)
-	suite.Require().NoError(err)
-
-	suite.Require().JSONEq(string(subM), resp.String())
+	suite.Require().JSONEq(`{"Cunt":1, "Name":"Внесено записей"}`, resp.String())
 
 }
 

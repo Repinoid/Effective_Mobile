@@ -4,6 +4,7 @@ import (
 	"context"
 	"emobile/internal/config"
 	"emobile/internal/handlera"
+	"emobile/internal/middlas"
 	"emobile/internal/models"
 	"flag"
 	"fmt"
@@ -80,6 +81,7 @@ func Run(ctx context.Context) (err error) {
 		time.Sleep(900 * time.Second)
 		return
 	}
+	
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
@@ -91,18 +93,8 @@ func Run(ctx context.Context) (err error) {
 	router.HandleFunc("/summa", handlera.SumSub).Methods("POST")
 
 	// подключаем middleware логирования
-	//	router.Use(middlas.WithHTTPLogging)
+	router.Use(middlas.WithHTTPLogging)
 	//	router.Use(middlas.ErrorLoggerMiddleware)
-
-	// router.HandleFunc("/swagger/doc.json", func(w http.ResponseWriter, r *http.Request) {
-	// 	http.ServeFile(w, r, "./docs/swagger.json")
-	// })
-
-	// Добавление Swagger маршрута
-
-	// router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-	// 	httpSwagger.URL("/swagger/doc.json"), // Явный путь
-	// ))
 
 	router.HandleFunc("/swagger/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		data, _ := os.ReadFile("./docs/swagger.json")
@@ -115,45 +107,6 @@ func Run(ctx context.Context) (err error) {
 		httpSwagger.URL("/swagger/swagger.json"), // Указываем путь к JSON
 		httpSwagger.DocExpansion("none"),         // Опционально: схлопывать документацию
 	))
-
-	// router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-	// 	httpSwagger.URL("/swagger/swagger.json"), // Явно указываем имя файла
-	// ))
-
-	// //router.PathPrefix("/swagger").Handler(httpSwagger.WrapHandler)
-
-	// router.HandleFunc("/test-swagger", func(w http.ResponseWriter, r *http.Request) {
-	// 	data, _ := os.ReadFile("./docs/swagger.json")
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	w.Write(data)
-	// })
-
-	// router.HandleFunc("/swagger/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-	// 	data, err := os.ReadFile("./docs/swagger.json")
-	// 	if err != nil {
-	// 		log.Printf("Ошибка чтения файла: %v", err)
-	// 		http.Error(w, "Not Found", 404)
-	// 		return
-	// 	}
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	w.Write(data)
-	// })
-
-	// router.HandleFunc("/swa", func(w http.ResponseWriter, r *http.Request) {
-	// 	absPath, _ := filepath.Abs(".")
-	// 	models.Logger.Info("Отдаю swagger.json", "path", absPath)
-	// 	ret := models.RetStruct{
-	// 		Name: absPath,
-	// 		Cunt: 0,
-	// 	}
-	// 	json.NewEncoder(w).Encode(ret)
-	// 	//http.ServeFile(w, r, absPath)
-	// })
-
-	// router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-	// 	httpSwagger.URL("/docs/swagger.json"), // Явно указываем путь
-	// 	//httpSwagger.URL("/swagger/doc.json"), // Явно указываем путь
-	// ))
 
 	// Контекст для graceful shutdown
 	ctx, cancel := context.WithCancel(ctx)
