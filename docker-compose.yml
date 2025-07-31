@@ -77,7 +77,9 @@ services:
     environment:
       GF_PLUGIN_DIRS_MODE: writable # Позволяет изменять директорию плагинов
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "true"
-      GF_INSTALL_PLUGINS: grafana-grafanacloud-loki-datasource
+      # GF_INSTALL_PLUGINS: loki-datasource
+      GF_INSTALL_PLUGINS: https://github.com/raintank/crate-datasource/archive/master.zip;crate-datasource,grafana-clock-panel,grafana-worldmap-panel,natel-plotly-panel
+      # GF_INSTALL_PLUGINS: grafana-grafanacloud-loki-datasource
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
     networks:
