@@ -67,14 +67,18 @@ services:
 
   grafana:
     image: grafana/grafana:12.1.0
-    container_name: graf
-    restart: always
+    container_name: grafana
+    restart: unless-stopped
     ports:
-      - "3000:3000" # Веб-интерфейс Grafana доступен на порту 3000
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      GF_INSTALL_PLUGINS: grafana-loki-datasource
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
     depends_on:
       - loki
-    environment:
-      GF_INSTALL_PLUGINS: grafana-loki-datasource # Устанавливаем плагин Loki datasource
     networks:
       - localnet
 
@@ -86,7 +90,7 @@ services:
     volumes:
       - ./local-config.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
-    command: -config.file=/etc/loki/local-config.yaml -config.expand-env=true
+    command: -config.file=/etc/loki/local-config.yaml
     restart: unless-stopped
     networks:
       - localnet
@@ -94,7 +98,7 @@ services:
 volumes:
   postgres_data:
   pgadmin_data: # loki-config:
-
+  grafana-storage:
   loki-data:
 
 
