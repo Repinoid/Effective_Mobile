@@ -66,19 +66,19 @@ services:
         loki-url: "http://loki:3100/loki/api/v1/push"
 
   grafana:
-    image: grafana/grafana:12.1.0
+    image: grafana/grafana:9.5.15 # Стабильная версия с поддержкой плагина
     container_name: graf
     restart: unless-stopped
     ports:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
+      - ./grafana-provisioning:/etc/grafana/provisioning
     environment:
       GF_INSTALL_PLUGINS: grafana-loki-datasource
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: true
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
-    depends_on:
-      - loki
     networks:
       - localnet
 
@@ -91,7 +91,6 @@ services:
       - ./local-config.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
     command: -config.file=/etc/loki/local-config.yaml
-    restart: unless-stopped
     networks:
       - localnet
 
@@ -110,3 +109,5 @@ networks:
 # docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 
 # mkdir -p loki-data/{chunks,rules,boltdb-shipper-active,boltdb-shipper-cache}
+
+# docker container rm -f graf grafana loki 2>/dev/null || true && docker compose up -d
