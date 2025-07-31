@@ -60,13 +60,43 @@ services:
     restart: unless-stopped
     networks:
       - localnet
+    logging:
+      driver: "loki"
+      options:
+        loki-url: "http://loki:3100/loki/api/v1/push"      
+
+
+  loki:
+    image: grafana/loki:2.8.2
+    user: "10001:10001"  # Пользователь из образа Loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+      - ./loki-data:/tmp/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    environment:
+      - UMASK=002  # Права для создаваемых файлов
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    depends_on:
+      - loki
+
 
 volumes:
   postgres_data:
   pgadmin_data:
+  # grafana-storage:
 
 
 networks:
   localnet:
     driver: bridge
     name: isem
+
+# docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+
+# mkdir -p loki-data/{chunks,rules,boltdb-shipper-active,boltdb-shipper-cache}
