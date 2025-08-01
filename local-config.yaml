@@ -25,6 +25,16 @@ schema_config:
       index:
         prefix: index_
         period: 24h
+  # Добавьте новую конфигурацию ниже существующей
+    - from: "2025-08-01"
+      # store: boltdbs
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+        # index_type: tsdb        
 
 storage_config:
   boltdb_shipper:
@@ -39,6 +49,7 @@ limits_config:
   max_query_parallelism: 128
   max_streams_per_user: 10000
   max_entries_limit_per_query: 5000
+  allow_structured_metadata: false
   # per_tenant_timeout: 5m
   # query_timeout: 5m
 
