@@ -36,12 +36,13 @@ services:
       retries: 10
 
   app:
+    image: goy
     container_name: sapp
-    build:
-      # путь до докерфайла
-      context: ./
-      # докерфайл
-      dockerfile: ServerDockerFile
+    # build:
+    #   # путь до докерфайла
+    #   context: ./
+    #   # докерфайл
+    #   dockerfile: ServerDockerFile
     ports:
       - "8080:8080"
     environment:
@@ -65,10 +66,23 @@ services:
       options:
         loki-url: "http://loki:3100/loki/api/v1/push"
 
+  alloy:
+    image: grafana/alloy:latest
+    container_name: alloy
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: ["run", "/etc/alloy/config.alloy"]
+    depends_on:
+      - loki
+    restart: unless-stopped        
+    networks:
+      - localnet
+
   grafana:
     image: grafana/grafana:latest
     # image: grafana/grafana:10.2.3
-    container_name: graf
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -117,3 +131,5 @@ networks:
 # mkdir -p loki-data/{chunks,rules,boltdb-shipper-active,boltdb-shipper-cache}
 
 # docker container rm -f graf grafana loki 2>/dev/null || true && docker compose up -d
+
+# docker buildx build -f ServerDockerFile -t goy .

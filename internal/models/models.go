@@ -10,7 +10,8 @@ var (
 	MigrationsPath = "file://migrations"
 	// MigrationsPath = "file://../../migrations"
 	EnvPath = "./.env"
-	DSN = ""
+	DSN     = ""
+	LogLevel   = slog.LevelInfo
 )
 
 type Subscription struct {

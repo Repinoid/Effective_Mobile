@@ -45,13 +45,15 @@ func WithHTTPLogging(next http.Handler) http.Handler {
 
 		duration := time.Since(start)
 
-		models.Logger.Debug("Дёрнута ручка",
+		models.Logger.Debug("Дёрнут handler",
+			"level", models.LogLevel,
 			"uri", r.URL.Path, // какой именно эндпоинт был дернут
 			"method", r.Method,
 			"status", responseData.status, // получаем перехваченный код статуса ответа
 			"duration", duration,
 			"size", responseData.size, // получаем перехваченный размер ответа
 			"UserAgent", r.UserAgent(),
+			"time", time.Now(),
 		)
 
 		next.ServeHTTP(&lw, r)

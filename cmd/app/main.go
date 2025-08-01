@@ -37,21 +37,21 @@ func main() {
 	ctx := context.Background()
 
 	// уровень логирования по умолчанию Info
-	Level := slog.LevelInfo
+	models.LogLevel = slog.LevelInfo
 	// Если есть флаг -debug
 	debugFlag := flag.Bool("debug", false, "установка Минимального уровня логирования DEBUG")
 	flag.Parse()
 	if *debugFlag {
-		Level = slog.LevelDebug
+		models.LogLevel = slog.LevelDebug
 	}
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     Level,
+		Level:     models.LogLevel,
 		AddSource: true, // Добавлять информацию об исходном коде
 	})
 	models.Logger = slog.New(handler)
 	slog.SetDefault(models.Logger)
 
-	models.Logger.Debug("Log", "level", Level)
+	models.Logger.Debug("Log", "level", models.LogLevel)
 
 	if err := Run(ctx); err != nil {
 		models.Logger.Error(err.Error())
