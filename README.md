@@ -92,9 +92,9 @@
 
 ## Интеграционные тесты
 - Сбилдите server image:
-`docker buildx build -f ServerDockerFile -t goy .`
+- `docker buildx build -f ServerDockerFile -t goy .`
 - Запустите сервис:
-`docker compose build --no-cache && docker compose up -d`
+- `docker compose build --no-cache && docker compose up -d`
 
 ### или в дальнейшем, если нет изменений
 `docker compose up -d`
@@ -113,7 +113,7 @@
 ### CI/CD
 - Готов шаблон `GitHub Actions` из другого проекта (может быть подключен при необходимости)
 
-
+## ТЗ / ТТХ
 ```
 Тестовое задание Junior Golang Developer
 Effective Mobile
