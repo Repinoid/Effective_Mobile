@@ -73,10 +73,10 @@ services:
       - ./alloy/config.alloy:/etc/alloy/config.alloy
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
-    command: ["run", "/etc/alloy/config.alloy"]
+    command: [ "run", "/etc/alloy/config.alloy" ]
     depends_on:
       - loki
-    restart: unless-stopped        
+    restart: unless-stopped
     networks:
       - localnet
 
@@ -109,8 +109,7 @@ services:
     volumes:
       - ./local-config.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
-    # command: -config.file=/etc/loki/local-config.yaml
-    command: ["-config.file=/etc/loki/local-config.yaml", "-config.expand-env=true"]
+    command: [ "-config.file=/etc/loki/local-config.yaml", "-config.expand-env=true" ]
     networks:
       - localnet
 
