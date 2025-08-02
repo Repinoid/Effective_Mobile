@@ -4,18 +4,28 @@ loki.write "main" {
   }
 }
 
-loki.source.docker "app_logs" {
-  targets = [{
-    __address__ = "localhost",
-    __path__ = "/var/run/docker.sock",
-  }]
+discovery.docker "linux" {
   host = "unix:///var/run/docker.sock"
-  labels = {
-    job = "myapp",
-    app = "backend",
-    container = "sapp",
-  }
-  forward_to = [loki.write.main.receiver]
- 
- 
 }
+
+
+loki.source.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+  targets    = discovery.docker.linux.targets
+  labels     = {"job" = "docker_logs", "container" = "{{.ContainerName}}"}
+
+  forward_to = [loki.write.main.receiver]
+}
+
+
+local.file_match "logs" {
+  path_targets = [
+    { __path__ = "/var/log/myapp/app.log" },
+  ]
+}
+
+loki.source.file "app_log" {
+  targets = local.file_match.logs.targets
+  forward_to = [loki.write.main.receiver]
+}
+

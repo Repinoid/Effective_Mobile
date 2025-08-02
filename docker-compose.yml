@@ -1,18 +1,18 @@
 services:
-  pgadmin:
-    image: dpage/pgadmin4:latest
-    container_name: pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: a@e.com
-      PGADMIN_DEFAULT_PASSWORD: admpass
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
-    ports:
-      - "8088:80"
-    depends_on:
-      - db
-    networks:
-      - localnet
+  # pgadmin:
+  #   image: dpage/pgadmin4:latest
+  #   container_name: pgadmin
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: a@e.com
+  #     PGADMIN_DEFAULT_PASSWORD: admpass
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #   ports:
+  #     - "8088:80"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - localnet
 
   db:
     image: postgres:17
@@ -70,13 +70,15 @@ services:
       context: .
       dockerfile: Dockerfile.alloy  # используем кастомный Dockerfile с CURL
     container_name: alloy
+    user: "0:0"  # Run as root (UID 0, GID 0)
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - loki-data:/loki
       - ./alloy/log:/var/log/myapp
-    command: [ "run", "/etc/alloy/config.alloy" ]
+    # command: [ "run", "/etc/alloy/config.alloy" ]
+    command: ["run", "--server.http.listen-addr=0.0.0.0:12345", "/etc/alloy/config.alloy"]
     depends_on:
       - loki
     restart: unless-stopped
@@ -115,6 +117,7 @@ services:
       - ./local-config.yaml:/etc/loki/local-config.yaml
       - loki-data:/loki
     command: [ "-config.file=/etc/loki/local-config.yaml", "-config.expand-env=true" ]
+    # command: ["-config.file=/etc/loki/local-config.yaml"]
     networks:
       - localnet
 
@@ -142,3 +145,7 @@ networks:
 # curl -G "http://localhost:3100/loki/api/v1/series" --data-urlencode 'match[]={job="myapp"}'
 
 # curl -G "http://localhost:3100/loki/api/v1/query" --data-urlencode 'query={job="myapp"}' | jq
+
+# docker inspect graf | grep -i cmd -A 125
+
+# docker run --name log-test -d busybox sh -c 'while true; do echo "Test log $(date)"; sleep 5; done'
