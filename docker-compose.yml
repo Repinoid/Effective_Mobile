@@ -47,13 +47,14 @@ services:
       - "8080:8080"
     environment:
       MIGRATIONS_PATH: "file://migrations"
-      BASE_HOST: db
-      DB_HOST: ${DB_HOST}
-      DB_PORT: 5432
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      APP_HOST: ${APP_HOST} #         "0.0.0.0" # Сервер будет слушать все интерфейсы
+      BASE_HOST:    db
+      DB_HOST:      ${DB_HOST}
+      DB_PORT:      5432
+      DB_USER:      ${DB_USER}
+      DB_PASSWORD:  ${DB_PASSWORD}
+      DB_NAME:      ${DB_NAME}
+      APP_HOST:     ${APP_HOST}       # "0.0.0.0" # Сервер будет слушать все интерфейсы
+      LOG_LEVEL:    debug             # Уровень логирования 
 
     depends_on:
       db:
@@ -73,12 +74,15 @@ services:
       - ./alloy/config.alloy:/etc/alloy/config.alloy
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
+      - loki-data:/loki
+      - ./alloy/log:/var/log/myapp
     command: [ "run", "/etc/alloy/config.alloy" ]
     depends_on:
       - loki
     restart: unless-stopped
     networks:
       - localnet
+
 
   grafana:
     image: grafana/grafana:latest
@@ -90,13 +94,11 @@ services:
       - grafana-storage:/var/lib/grafana
       - ./grafana-provisioning:/etc/grafana/provisioning
     environment:
-      # GF_PLUGIN_DIRS_MODE: writable # Позволяет изменять директорию плагинов
-      # GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: "true"
-      # GF_INSTALL_PLUGINS: loki-datasource
-      # GF_INSTALL_PLUGINS: https://github.com/raintank/crate-datasource/archive/master.zip;crate-datasource,grafana-clock-panel,grafana-worldmap-panel,natel-plotly-panel
-      # GF_INSTALL_PLUGINS: grafana-grafanacloud-loki-datasource
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD: admin
+    depends_on:
+      - loki
+      # - prometheus      
     networks:
       - localnet
 
@@ -113,11 +115,27 @@ services:
     networks:
       - localnet
 
+# Prometheus (система хранения метрик)
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - prometheus_data:/prometheus
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - alloy      
+  #   networks:
+  #     - localnet
+
 volumes:
   postgres_data:
-  pgadmin_data: # loki-config:
+  pgadmin_data: 
   grafana-storage:
   loki-data:
+  # prometheus_data:  
 
 
 networks:
@@ -132,3 +150,7 @@ networks:
 # docker container rm -f graf grafana loki 2>/dev/null || true && docker compose up -d
 
 # docker buildx build -f ServerDockerFile -t goy .
+
+# curl -G "http://localhost:3100/loki/api/v1/series" --data-urlencode 'match[]={job="myapp"}'
+
+# curl -G "http://localhost:3100/loki/api/v1/query" --data-urlencode 'query={job="myapp"}' | jq
