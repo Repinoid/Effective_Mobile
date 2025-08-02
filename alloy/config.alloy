@@ -4,13 +4,18 @@ loki.write "main" {
   }
 }
 
-loki.source.file "app_logs" {
+loki.source.docker "app_logs" {
   targets = [{
     __address__ = "localhost",
-    __path__ = "/var/log/myapp/app.log",
-    job = "myapp",
-    environment = "dev",
-    app = "backend",
+    __path__ = "/var/run/docker.sock",
   }]
+  host = "unix:///var/run/docker.sock"
+  labels = {
+    job = "myapp",
+    app = "backend",
+    container = "sapp",
+  }
   forward_to = [loki.write.main.receiver]
+ 
+ 
 }
