@@ -64,13 +64,11 @@ services:
     restart: unless-stopped
     networks:
       - localnet
-    # logging:
-    #   driver: "loki"
-    #   options:
-    #     loki-url: "http://loki:3100/loki/api/v1/push"
 
   alloy:
-    image: grafana/alloy:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.alloy  # используем кастомный Dockerfile с CURL
     container_name: alloy
     volumes:
       - ./alloy/config.alloy:/etc/alloy/config.alloy
@@ -88,7 +86,7 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    # image: grafana/grafana:10.2.3
+    container_name: graf
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -116,21 +114,6 @@ services:
     command: [ "-config.file=/etc/loki/local-config.yaml", "-config.expand-env=true" ]
     networks:
       - localnet
-
-# Prometheus (система хранения метрик)
-  # prometheus:
-  #   image: prom/prometheus:latest
-  #   container_name: prometheus
-  #   ports:
-  #     - "9090:9090"
-  #   volumes:
-  #     - ./prometheus.yml:/etc/prometheus/prometheus.yml
-  #     - prometheus_data:/prometheus
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - alloy      
-  #   networks:
-  #     - localnet
 
 volumes:
   postgres_data:

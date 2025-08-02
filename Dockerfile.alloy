@@ -1,0 +1,3 @@
+FROM grafana/alloy:latest
+# Для Debian/Ubuntu:
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
