@@ -126,8 +126,6 @@ volumes:
   pgadmin_data: 
   grafana-storage:
   loki-data:
-  # prometheus_data:  
-
 
 networks:
   localnet:
