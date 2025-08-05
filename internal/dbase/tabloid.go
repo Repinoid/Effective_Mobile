@@ -72,10 +72,10 @@ func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (
 	return
 }
 
-func (dataBase *DBstruct) ListSub(ctx context.Context) (subs []models.Subscription, err error) {
+func (dataBase *DBstruct) ListSub(ctx context.Context, pageSize, offset int) (subs []models.Subscription, err error) {
 
-	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions"
-	rows, err := dataBase.DB.Query(ctx, order)
+	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions LIMIT $1 OFFSET $2"
+	rows, err := dataBase.DB.Query(ctx, order, pageSize, offset)
 	if err != nil {
 		return nil, err
 	}

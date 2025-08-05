@@ -70,6 +70,8 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	config.Configuration.DBName = "testdb"
 	config.Configuration.DBPassword = "testpass"
 	config.Configuration.DBUser = "testuser"
+	config.Configuration.PageSize = 40
+
 	cfg := config.Configuration
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)

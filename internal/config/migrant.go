@@ -50,8 +50,9 @@ func InitMigration(ctx context.Context, cfg Config) (err error) {
 		}
 		fileInfo, errf := os.Stat(pureFile)
 		_ = fileInfo
+		pwd, _ := os.Getwd()
 		if errf != nil {
-			models.Logger.Error("no file", "", pureFile, "err", errf)
+			models.Logger.Error("no file ", "", pureFile, "err", errf, "pwd", pwd)
 		} else {
 			models.Logger.Debug("ok", "exist", pureFile)
 		}

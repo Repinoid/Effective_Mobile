@@ -30,8 +30,15 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	suite.ctx = context.Background()
 	suite.t = time.Now()
 
-	models.MigrationsPath = "file://../../migrations"
-	models.EnvPath = "../../.env"
+	if os.Getenv("DEBUG") == "true" ||
+		os.Getenv("DLV_DEBUG") == "1" ||
+		os.Getenv("VSCODE_DEBUG") == "true" {
+			models.MigrationsPath = "file://migrations"
+			models.EnvPath = ".env"
+	} else {
+		models.MigrationsPath = "file://../../migrations"
+		models.EnvPath = "../../.env"
+	}
 
 	// ***************** POSTGREs part begin ************************************
 	// Запуск контейнера PostgreSQL

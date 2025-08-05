@@ -16,6 +16,7 @@ type Config struct {
 	DBPort     int
 	AppPort    int
 	AppHost    string
+	PageSize   int
 }
 
 var Configuration Config
@@ -46,6 +47,12 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	pageSizeStr := GetEnv("PAGE_SIZE", "20")
+	pagesz, err := strconv.Atoi(pageSizeStr)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Config{
 		DBUser:     GetEnv("DB_USER", "postgres"),
 		DBPassword: GetEnv("DB_PASSWORD", ""),
@@ -54,6 +61,7 @@ func Load() (*Config, error) {
 		DBPort:     dbPort,
 		AppPort:    appPort,
 		AppHost:    GetEnv("APP_HOST", "0.0.0.0"),
+		PageSize:	pagesz,
 	}, nil
 }
 

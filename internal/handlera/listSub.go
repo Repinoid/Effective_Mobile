@@ -3,7 +3,9 @@ package handlera
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
+	"emobile/internal/config"
 	"emobile/internal/dbase"
 	"emobile/internal/models"
 )
@@ -18,6 +20,22 @@ import (
 // @Router /list [get]
 func ListSub(rwr http.ResponseWriter, req *http.Request) {
 
+	// Получение параметров страницы
+	pageStr := req.URL.Query().Get("page")
+	pageSizeStr := req.URL.Query().Get("pageSize")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	} 
+
+	pageSize, err := strconv.Atoi(pageSizeStr)
+	if err != nil || pageSize < 1 {
+		pageSize = config.Configuration.PageSize
+	}
+
+	offset := (page - 1) * pageSize
+
 	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
@@ -26,7 +44,7 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	defer db.DB.Close()
 
 	// запрос в БД на получения списка всех подписок
-	subs, err := db.ListSub(req.Context())
+	subs, err := db.ListSub(req.Context(), pageSize, offset )
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return

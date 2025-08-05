@@ -146,7 +146,7 @@ func (suite *TstHand) Test_05DeleteAllSubs() {
 	defer db.DB.Close()
 
 	// запрос в БД на получения списка всех подписок
-	subs, err := db.ListSub(suite.ctx)
+	subs, err := db.ListSub(suite.ctx, 40, 0)
 	suite.Require().NoError(err)
 	// список должен быть пустой
 	suite.Require().Equal(0, len(subs))

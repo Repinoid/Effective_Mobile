@@ -25,7 +25,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	suite.Require().NoError(err)
 
 	// число подписок должно стать 0
-	subs, err := suite.dataBase.ListSub(suite.ctx)
+	subs, err := suite.dataBase.ListSub(suite.ctx, 40, 0)
 	suite.Require().NoError(err)
 	suite.Require().Equal(0, len(subs))
 
@@ -54,7 +54,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	suite.Require().EqualValues(1, cTag.RowsAffected())
 
 	// число подписок должно стать 2
-	subs, err = suite.dataBase.ListSub(suite.ctx)
+	subs, err = suite.dataBase.ListSub(suite.ctx, 40, 0)
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(2, len(subs))
 
@@ -66,7 +66,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	suite.Require().EqualValues(1, cTag.RowsAffected())
 
 	// число подписок должно стать 3
-	subs, err = suite.dataBase.ListSub(suite.ctx)
+	subs, err = suite.dataBase.ListSub(suite.ctx, 40, 0)
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(3, len(subs))
 
@@ -85,7 +85,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	suite.Require().EqualValues(1, cTag.RowsAffected())
 
 	// 3-1 = 2
-	subs, err = suite.dataBase.ListSub(suite.ctx)
+	subs, err = suite.dataBase.ListSub(suite.ctx, 40, 0)
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(2, len(subs))
 
@@ -97,9 +97,19 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	suite.Require().EqualValues(1, cTag.RowsAffected())
 
 	// количество не изменилось
-	subs, err = suite.dataBase.ListSub(suite.ctx)
+	subs, err = suite.dataBase.ListSub(suite.ctx, 40, 0)
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(2, len(subs))
+
+	// pagesize 1, result 1 must be
+	subs, err = suite.dataBase.ListSub(suite.ctx, 1, 0)
+	suite.Require().NoError(err)
+	suite.Require().EqualValues(1, len(subs))
+
+	// offset 1, result 1 must be - 2-1
+	subs, err = suite.dataBase.ListSub(suite.ctx, 40, 1)
+	suite.Require().NoError(err)
+	suite.Require().EqualValues(1, len(subs))
 
 	// так можно долго продолжать, надеюсь, достаточно тестов
 
