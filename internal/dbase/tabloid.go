@@ -188,7 +188,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 
 	order := "DELETE FROM subscriptions WHERE " +
 		"($1 = '' OR service_name = $1) AND " +
-		"( ($2::int = 0 AND price != 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
+		"( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
 		"($3 = '' OR user_id = $3) AND " +
 
 		"(start_date <= $4 OR $4 IS NULL) AND " +
@@ -210,14 +210,17 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	if sub.Edt.IsZero() {
 		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
-	order := "SELECT COALESCE(SUM(price), 0) FROM subscriptions WHERE " +
-		"($1 = '' OR service_name = $1) AND " +
-		"($2 = '' OR user_id = $2) AND " +
-		"($3 >=  start_date AND $3 <= end_date) OR " +
-		"($4 >=  start_date AND $4 <= end_date) OR " +
-		"(start_date >=$3  AND start_date <= $4 ) OR " +
-		"(end_date >=$3  AND end_date <= $4 ) ;"
-		// для включения в сумму диапазоны подписки и запроса должны пересекаться
+
+	order := `
+	SELECT COALESCE(SUM(price * 
+		((EXTRACT(YEAR FROM LEAST($4::date, end_date)) - EXTRACT(YEAR FROM GREATEST($3::date, start_date))) * 12 + 
+		(EXTRACT(MONTH FROM LEAST($4::date, end_date)) - EXTRACT(MONTH FROM GREATEST($3::date, start_date))) + 1
+			)), 0) AS total_price
+		FROM subscriptions
+	 	WHERE ($1 = '' OR service_name = $1)
+	 	AND ($2 = '' OR user_id = $2)
+	 	AND GREATEST($3, start_date) <= LEAST($4, end_date)
+	`
 
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
 	summa = 0
@@ -228,3 +231,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 
 	return
 }
+
+//  docker exec -it pcontB psql -U testuser -d testdb -c "select * from subscriptions"
+
+// docker exec -it pcontB psql -U testuser -d testdb -c "SELECT service_name, start_date, end_date, EXTRACT(MONTH FROM end_date) FROM subscriptions"

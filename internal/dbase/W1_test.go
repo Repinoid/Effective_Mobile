@@ -17,11 +17,13 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		Start_date:   "01-02-2025",
 		End_date:     "11-2025",
 	}
+	err := models.MakeTT(&subG)
+	suite.Require().NoError(err)
 
 	// трём таблицу передав пустую запись
 	// впрочем, там и так нет ничего, на случай,
 	// если в дальнейшем добавятся операции перед этим тестом
-	_, err := suite.dataBase.DeleteSub(suite.ctx, models.Subscription{})
+	_, err = suite.dataBase.DeleteSub(suite.ctx, models.Subscription{})
 	suite.Require().NoError(err)
 
 	// число подписок должно стать 0
@@ -38,6 +40,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	sub1 := subG
 	sub1.Edt = time.Time{}
 	sub1.Price = 0
+	models.MakeTT(&sub1)
 	cTag, err = suite.dataBase.AddSub(suite.ctx, sub1)
 	// ошибка т.к. такой же PRIMARY KEY (user_id, service_name)
 	suite.Require().Error(err)
@@ -111,6 +114,39 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	suite.Require().NoError(err)
 	suite.Require().EqualValues(1, len(subs))
 
-	// так можно долго продолжать, надеюсь, достаточно тестов
+	// drop table
+	_, err = suite.dataBase.DeleteSub(suite.ctx, models.Subscription{})
+	suite.Require().NoError(err)
+
+	subP := models.Subscription{
+		Service_name: "Чаян",
+		Price:        700,
+		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+		Start_date:   "01-02-2025",
+		End_date:     "11-2025",
+	}
+
+	err = models.MakeTT(&subP)
+	suite.Require().NoError(err)
+
+	cTag, err = suite.dataBase.AddSub(suite.ctx, subP)
+	suite.Require().NoError(err)
+	// 1 - запись добавилась
+	suite.Require().EqualValues(1, cTag.RowsAffected())
+
+	checkP := models.Subscription{
+		Service_name: "Чаян",
+		//		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+		Start_date: "03-02-2025",
+		End_date:   "04-2025",
+	}
+
+	err = models.MakeTT(&checkP)
+	suite.Require().NoError(err)
+
+	summa, err := suite.dataBase.SumSub(suite.ctx, checkP)
+	suite.Require().NoError(err)
+	//  02, 03, 04 - 3 months
+	suite.Require().EqualValues(int64(700*3), summa)
 
 }

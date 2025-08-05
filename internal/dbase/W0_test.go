@@ -37,6 +37,7 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 			models.EnvPath = ".env"
 	} else {
 		models.MigrationsPath = "file://../../migrations"
+		
 		models.EnvPath = "../../.env"
 	}
 
