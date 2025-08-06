@@ -13,7 +13,7 @@ import (
 )
 
 // Структура для базы данных.
-type DBstruct struct { 
+type DBstruct struct {
 	DB *pgxpool.Pool
 	//	DB *pgx.Conn
 }

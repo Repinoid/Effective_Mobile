@@ -28,9 +28,9 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 	if err != nil {
 		return err
 	}
-	if sub.Edt.IsZero() {
-		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
-	}
+	// if sub.Edt.IsZero() {
+	// 	sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
+	// }
 
 	sub.Start_date = temp.StartDate
 	sub.End_date = temp.EndDate
@@ -78,9 +78,9 @@ func MakeTT(sub *Subscription) (err error) {
 		return
 	}
 	sub.Edt, err = ParseDate(sub.End_date)
-	if sub.Edt.IsZero() {
-		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
-	}
+	// if sub.Edt.IsZero() {
+	// 	sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
+	// }
 	return
 
 }
