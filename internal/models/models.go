@@ -23,8 +23,6 @@ type Subscription struct {
 	End_date     string `json:"end_date,omitempty"` // “start_date”: “07-2025”
 	Sdt          any    `json:"-"`                  // немаршалемое
 	Edt          any    `json:"-"`
-	// Sdt          time.Time `json:"-"`                  // немаршалемое
-	// Edt          time.Time `json:"-"`
 }
 
 type RetStruct struct {

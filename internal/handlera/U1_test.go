@@ -90,7 +90,6 @@ func (suite *TstHand) Test_01AddSub() {
 				s.End_date = ""
 				return s
 			}(),
-			// status: http.StatusBadRequest,
 			status: http.StatusInternalServerError,
 			reply:  `{"status":"bad START date"}`,
 		},
@@ -160,16 +159,6 @@ func (suite *TstHand) Test_01AddSub() {
 			}
 
 			suite.Require().Equal(tt.status, res.StatusCode)
-
-			// if tt.status != res.StatusCode {
-			// 	eM := errMessage{}
-			// 	//errBody, err :=
-			// 	resBody, err := io.ReadAll(res.Body)
-			// 	suite.Require().NoError(err)
-			// 	err = json.Unmarshal(resBody, &eM)
-			// 	suite.Require().NoError(err)
-			// 	suite.Require().Equal("ok", eM.Message)
-			// }
 
 		})
 	}
