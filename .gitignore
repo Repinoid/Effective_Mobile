@@ -4,3 +4,4 @@ bin/
 *.sqlite
 vendor/
 cmds.txt
+.vscode/
