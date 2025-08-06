@@ -100,21 +100,6 @@ func (dataBase *DBstruct) ListSub(ctx context.Context, pageSize, offset int) (su
 
 func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) (subs []models.Subscription, err error) {
 
-	// sub.Sdt nilEdt тип time.Time.
-	// происходит полная муть если это передавать в Query из-за того что у них нет обычного nil,
-	// определяем нулёвость по .IsZero() & прописываем в интерфейс, который и подсовываем в Query
-	var nilSdt, nilEdt any
-	if sub.Sdt.IsZero() {
-		nilSdt = nil
-	} else {
-		nilSdt = sub.Sdt
-	}
-	if sub.Edt.IsZero() {
-		nilEdt = nil
-	} else {
-		nilEdt = sub.Edt
-	}
-
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
 		"($2::int = 0 OR price = $2::int) AND " +
@@ -123,7 +108,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		"(start_date <= $4 OR $4 IS NULL) AND " +
 		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
 
-	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
+	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		return nil, err
 	}
@@ -146,19 +131,6 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	// comments on ReadSub
-	var nilSdt, nilEdt any
-
-	if sub.Sdt.IsZero() {
-		nilSdt = nil
-	} else {
-		nilSdt = sub.Sdt
-	}
-	if sub.Edt.IsZero() {
-		nilEdt = nil
-	} else {
-		nilEdt = sub.Edt
-	}
-
 	// comments on ReadSub
 	order := "UPDATE subscriptions SET " +
 		"price = CASE WHEN $1::int != 0 THEN $1 ELSE price END, " +
@@ -166,25 +138,13 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 		"end_date=COALESCE($3, end_date) " +
 		"WHERE service_name=$4 AND user_id=$5::uuid;"
 
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, nilSdt, nilEdt, sub.Service_name, sub.User_id)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Sdt, sub.Edt, sub.Service_name, sub.User_id)
 
 	return
 }
 
 func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	// comments on ReadSub
-	var nilSdt, nilEdt any
-	if sub.Sdt.IsZero() {
-		nilSdt = nil
-	} else {
-		nilSdt = sub.Sdt
-	}
-	if sub.Edt.IsZero() {
-		nilEdt = nil
-	} else {
-		nilEdt = sub.Edt
-	}
 
 	order := "DELETE FROM subscriptions WHERE " +
 		"($1 = '' OR service_name = $1) AND " +
@@ -194,7 +154,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		"(start_date <= $4 OR $4 IS NULL) AND " +
 		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
 
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, nilSdt, nilEdt)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
 	}
@@ -207,7 +167,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	//  если конечная дата подписки не задана - устанавлiваем в максимально возможное значение
 	//
 	//  Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
-	if sub.Edt.IsZero() {
+	if sub.Edt == nil {
 		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
 

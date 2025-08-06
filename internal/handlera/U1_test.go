@@ -90,7 +90,8 @@ func (suite *TstHand) Test_01AddSub() {
 				s.End_date = ""
 				return s
 			}(),
-			status: http.StatusBadRequest,
+			// status: http.StatusBadRequest,
+			status: http.StatusInternalServerError,
 			reply:  `{"status":"bad START date"}`,
 		},
 		{

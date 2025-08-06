@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"emobile/internal/dbase"
 	"emobile/internal/models"
@@ -79,7 +80,7 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// если при непустой конечной дате она раньше начальной
-	if sub.End_date != "" && sub.Edt.Before(sub.Sdt) {
+	if sub.End_date != "" && sub.Edt.(time.Time).Before(sub.Sdt.(time.Time)) {
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("end date before start"))
 		return
