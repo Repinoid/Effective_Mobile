@@ -27,7 +27,7 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = 1
-	} 
+	}
 
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil || pageSize < 1 {
@@ -44,7 +44,7 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	defer models.Inter.CloseDB()
 
 	// запрос в БД на получения списка всех подписок
-	subs, err := models.Inter.ListSub(req.Context(), pageSize, offset )
+	subs, err := models.Inter.ListSub(req.Context(), pageSize, offset)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
@@ -54,12 +54,13 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	if len(subs) != 0 {
 		json.NewEncoder(rwr).Encode(subs)
-	} else {
-		ret := models.RetStruct{
-			Name: "Нет записей в подписках",
-			Cunt: 0,
-		}
-		json.NewEncoder(rwr).Encode(ret)
+		return
 	}
+
+	ret := models.RetStruct{
+		Name: "Нет записей в подписках",
+		Cunt: 0,
+	}
+	json.NewEncoder(rwr).Encode(ret)
 
 }

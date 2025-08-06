@@ -29,7 +29,7 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 
 	// должны быть определены Service_name или User_id, и диапазон дат
-	if (readSub.Service_name == "" && readSub.User_id == "") || 
+	if (readSub.Service_name == "" && readSub.User_id == "") ||
 		readSub.Edt.IsZero() || readSub.Sdt.IsZero() {
 		http.Error(rwr, "не все данные указаны", http.StatusBadRequest)
 		return
@@ -54,8 +54,12 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 		Name: "Сумма подписок",
 		Cunt: summa,
 	}
-	json.NewEncoder(rwr).Encode(ret)
 
+	if summa == 0 {
+		ret.Name = "Нет таких подписок"
+	}
+
+	json.NewEncoder(rwr).Encode(ret)
 }
 
 // DeleteSub godoc
@@ -97,6 +101,10 @@ func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 	ret := models.RetStruct{
 		Name: "Удалено записей",
 		Cunt: cTag.RowsAffected(),
+	}
+
+	if cTag.RowsAffected() == 0 {
+		ret.Name = "Не найдено записей на удаление, удовлетворяющих запросу"
 	}
 
 	json.NewEncoder(rwr).Encode(ret)

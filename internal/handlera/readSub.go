@@ -54,7 +54,17 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(rwr).Encode(subs)
+	if len(subs) != 0 {
+		json.NewEncoder(rwr).Encode(subs)
+		return
+	}
+	
+	ret := models.RetStruct{
+		Name: "Не найдено записей, удовлетворяющих запросу",
+		Cunt: 0,
+	}
+	json.NewEncoder(rwr).Encode(ret)
+
 }
 
 // UpdateSub godoc
@@ -109,8 +119,11 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 		Name: "Обновлено записей",
 		Cunt: cTag.RowsAffected(),
 	}
+	if cTag.RowsAffected() == 0 {
+		ret.Name = "Не найдено записей, удовлетворяющих запросу"
+	}
 
 	rwr.WriteHeader(http.StatusOK)
-	
+
 	json.NewEncoder(rwr).Encode(ret)
 }
