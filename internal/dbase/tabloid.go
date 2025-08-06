@@ -13,7 +13,7 @@ import (
 )
 
 // Структура для базы данных.
-type DBstruct struct {
+type DBstruct struct { 
 	DB *pgxpool.Pool
 	//	DB *pgx.Conn
 }
@@ -118,7 +118,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
 		"service_name=$1 AND " +
 		"($2::int = 0 OR price = $2::int) AND " +
-		"user_id=$3 AND " +
+		"user_id=$3::uuid AND " +
 
 		"(start_date <= $4 OR $4 IS NULL) AND " +
 		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
@@ -164,7 +164,7 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 		"price = CASE WHEN $1::int != 0 THEN $1 ELSE price END, " +
 		"start_date=COALESCE($2, start_date), " +
 		"end_date=COALESCE($3, end_date) " +
-		"WHERE service_name=$4 AND user_id=$5;"
+		"WHERE service_name=$4 AND user_id=$5::uuid;"
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, nilSdt, nilEdt, sub.Service_name, sub.User_id)
 
@@ -189,7 +189,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 	order := "DELETE FROM subscriptions WHERE " +
 		"($1 = '' OR service_name = $1) AND " +
 		"( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
-		"($3 = '' OR user_id = $3) AND " +
+		"($3 = '' OR user_id = $3::uuid) AND " +
 
 		"(start_date <= $4 OR $4 IS NULL) AND " +
 		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
@@ -218,7 +218,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 			)), 0) AS total_price
 		FROM subscriptions
 	 	WHERE ($1 = '' OR service_name = $1)
-	 	AND ($2 = '' OR user_id = $2)
+	 	AND ($2 = '' OR user_id = $2::uuid)
 	 	AND GREATEST($3, start_date) <= LEAST($4, end_date)
 	`
 

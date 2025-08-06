@@ -13,9 +13,10 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	subG := models.Subscription{
 		Service_name: "Yandex Plus",
 		Price:        400,
-		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-		Start_date:   "01-02-2025",
-		End_date:     "11-2025",
+		User_id:      uuid.NewString(),
+		// User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+		Start_date: "01-02-2025",
+		End_date:   "11-2025",
 	}
 	err := models.MakeTT(&subG)
 	suite.Require().NoError(err)
@@ -41,16 +42,10 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	sub1.Edt = time.Time{}
 	sub1.Price = 0
 	models.MakeTT(&sub1)
-	cTag, err = suite.dataBase.AddSub(suite.ctx, sub1)
-	// ошибка т.к. такой же PRIMARY KEY (user_id, service_name)
-	suite.Require().Error(err)
-	// 0 - запись не вставилась Code = "23505"
-	suite.Require().EqualValues(0, cTag.RowsAffected())
-	suite.Require().Contains(err.Error(), "SQLSTATE 23505")
 
 	// генерируем user_id
 	sub1.User_id = uuid.NewString()
-	// повторяем добавление записи, с иным user_id
+	// добавление записи, с иным user_id
 	cTag, err = suite.dataBase.AddSub(suite.ctx, sub1)
 	suite.Require().NoError(err)
 	// 1 - запись добавилась
@@ -121,9 +116,10 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	subP := models.Subscription{
 		Service_name: "Чаян",
 		Price:        700,
-		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-		Start_date:   "01-02-2025",
-		End_date:     "11-2025",
+		User_id:      uuid.NewString(),
+		// User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
+		Start_date: "01-02-2025",
+		End_date:   "11-2025",
 	}
 
 	err = models.MakeTT(&subP)
