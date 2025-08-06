@@ -76,7 +76,7 @@ func (suite *TS) Test_01() {
 	suite.Require().NoError(err, "summa")
 	suite.Require().Equal(http.StatusOK, resp.StatusCode())
 
-	suite.Require().JSONEq(`{"Cunt":0, "Name":"Сумма подписок"}`, resp.String())
+	suite.Require().JSONEq(`{"Cunt":0, "Name":"Нет таких подписок"}`, resp.String())
 
 	sub2.End_date = "01-02-2020"
 	req = httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).

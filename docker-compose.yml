@@ -69,4 +69,4 @@ volumes:
 networks:
   localnet:
     driver: bridge
-    name: isem
+    name: netto

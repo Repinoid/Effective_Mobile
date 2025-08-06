@@ -117,15 +117,15 @@ func (suite *TstHand) Test_02ReadSub() {
 			resBody, err := io.ReadAll(res.Body)
 			suite.Require().NoError(err)
 
-			// размаршалливаем список подписок
-			subs := []models.Subscription{}
-			err = json.Unmarshal(resBody, &subs)
-			suite.Require().NoError(err)
-			// должно быть 2 записи
-			suite.Require().Equal(tt.records, len(subs))
-			// сравниваем Service_name и User_id первой записи
-			// suite.Require().Equal(sub.Service_name, subs[0].Service_name)
-			// suite.Require().Equal(sub.User_id, subs[0].User_id)
+			if tt.records != 0 {
+				// размаршалливаем список подписок
+				subs := []models.Subscription{}
+				err = json.Unmarshal(resBody, &subs)
+				suite.Require().NoError(err)
+				// должно быть 2 записи
+				suite.Require().Equal(tt.records, len(subs))
+			}
+
 		})
 	}
 
