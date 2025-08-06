@@ -2,7 +2,6 @@ package dbase
 
 import (
 	"emobile/internal/models"
-	"time"
 
 	"github.com/google/uuid"
 )
@@ -39,7 +38,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 
 	// структура "плоская", без указателей, поэтому копия независимая
 	sub1 := subG
-	sub1.Edt = time.Time{}
+	sub1.End_date = nil
 	sub1.Price = 0
 	models.MakeTT(&sub1)
 

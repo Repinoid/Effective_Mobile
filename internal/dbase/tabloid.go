@@ -61,13 +61,13 @@ func Ping(ctx context.Context) error {
 
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	if sub.End_date == "" {
+	if sub.End_date == nil {
 		order := "INSERT INTO subscriptions(service_name, price, user_id, start_date) VALUES ($1, $2, $3, $4) ;"
-		cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt)
+		cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date)
 		return
 	}
 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 
 	return
 }
@@ -90,8 +90,8 @@ func (dataBase *DBstruct) ListSub(ctx context.Context, pageSize, offset int) (su
 		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
 			return nil, err
 		}
-		sub.Sdt = sdt.Time
-		sub.Edt = edt.Time
+		sub.Start_date = sdt.Time
+		sub.End_date = edt.Time
 		subs = append(subs, sub)
 	}
 
@@ -108,7 +108,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		"(start_date <= $4 OR $4 IS NULL) AND " +
 		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
 
-	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
 		return nil, err
 	}
@@ -120,8 +120,8 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
 			return nil, err
 		}
-		sub.Sdt = sdt.Time
-		sub.Edt = edt.Time
+		sub.Start_date = sdt.Time
+		sub.End_date = edt.Time
 		subs = append(subs, sub)
 	}
 
@@ -138,13 +138,12 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 		"end_date=COALESCE($3, end_date) " +
 		"WHERE service_name=$4 AND user_id=$5::uuid;"
 
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Sdt, sub.Edt, sub.Service_name, sub.User_id)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Start_date, sub.End_date, sub.Service_name, sub.User_id)
 
 	return
 }
 
 func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
-
 
 	order := "DELETE FROM subscriptions WHERE " +
 		"($1 = '' OR service_name = $1) AND " +
@@ -154,7 +153,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		"(start_date <= $4 OR $4 IS NULL) AND " +
 		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
 
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
 	}
@@ -167,8 +166,8 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	//  если конечная дата подписки не задана - устанавлiваем в максимально возможное значение
 	//
 	//  Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
-	if sub.Edt == nil {
-		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
+	if sub.End_date == nil {
+		sub.End_date = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
 
 	order := `
@@ -182,7 +181,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	 	AND GREATEST($3, start_date) <= LEAST($4, end_date)
 	`
 
-	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
+	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Start_date, sub.End_date)
 	summa = 0
 	err = row.Scan(&summa)
 	if err != nil {
@@ -195,8 +194,6 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 func (dataBase *DBstruct) CloseDB() {
 	dataBase.DB.Close()
 }
-
-
 
 //  docker exec -it pcontB psql -U testuser -d testdb -c "select * from subscriptions"
 

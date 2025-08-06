@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -20,23 +21,14 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 	if err := json.Unmarshal(data, &temp); err != nil {
 		return err
 	}
-	sub.Sdt, err = ParseDate(temp.StartDate)
+	sub.Start_date, err = ParseDate(temp.StartDate)
 	if err != nil {
 		return err
 	}
-	// if sub.Sdt.(time.Time).IsZero() {
-	// 	sub.Sdt = nil
-	// }
-	sub.Edt, err = ParseDate(temp.EndDate)
+	sub.End_date, err = ParseDate(temp.EndDate)
 	if err != nil {
 		return err
 	}
-	// if sub.Edt.(time.Time).IsZero() {
-	// 	sub.Edt = nil
-	// }
-
-	sub.Start_date = temp.StartDate
-	sub.End_date = temp.EndDate
 
 	return
 }
@@ -66,27 +58,22 @@ func ParseDate(date string) (tim any, err error) {
 	if t, err := time.Parse("01-06", date); err == nil {
 		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()), nil
 	}
+	if t, err := time.Parse(time.RFC3339, date); err == nil {
+		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()), nil
+	}
 
-	return nil, err
+	return nil, errors.New("неверный формаь даты")
 }
 
 func MakeTT(sub *Subscription) (err error) {
-	sub.Sdt, err = ParseDate(sub.Start_date)
-	if err != nil {
-		return
+
+	switch sub.Start_date.(type) {
+	case string:
+		sub.Start_date, _ = ParseDate(sub.Start_date.(string))
 	}
-	sub.Edt, err = ParseDate(sub.End_date)
-
-	// if sub.Edt.(time.Time).IsZero() {
-	// 	sub.Edt = nil
-	// }
-	// if sub.Sdt.(time.Time).IsZero() {
-	// 	sub.Sdt = nil
-	// }
-
-	// if sub.Edt.IsZero() {
-	// 	sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
-	// }
+	switch sub.End_date.(type) {
+	case string:
+		sub.End_date, _ = ParseDate(sub.End_date.(string))
+	}
 	return
-
 }

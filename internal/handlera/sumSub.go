@@ -30,7 +30,7 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 
 	// должны быть определены Service_name или User_id, и диапазон дат
 	if (readSub.Service_name == "" && readSub.User_id == "") ||
-		readSub.Edt == nil || readSub.Sdt == nil {
+		readSub.End_date == nil || readSub.Start_date == nil {
 		http.Error(rwr, "не все данные указаны", http.StatusBadRequest)
 		return
 	}

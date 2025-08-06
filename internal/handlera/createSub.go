@@ -74,13 +74,13 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if sub.Start_date == "" {
+	if sub.Start_date == nil {
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no start date"))
 		return
 	}
 	// если при непустой конечной дате она раньше начальной
-	if sub.End_date != "" && sub.Edt.(time.Time).Before(sub.Sdt.(time.Time)) {
+	if sub.End_date != nil && sub.End_date.(time.Time).Before(sub.Start_date.(time.Time)) {
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("end date before start"))
 		return

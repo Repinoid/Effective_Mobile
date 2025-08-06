@@ -90,7 +90,7 @@ func (suite *TstHand) Test_01AddSub() {
 				s.End_date = ""
 				return s
 			}(),
-			status: http.StatusInternalServerError,
+			status: http.StatusBadRequest,
 			reply:  `{"status":"bad START date"}`,
 		},
 		{
@@ -133,6 +133,9 @@ func (suite *TstHand) Test_01AddSub() {
 	for _, tt := range tests {
 
 		suite.Run(tt.name, func() {
+
+			// err := models.MakeTT(&tt.sub)
+			// suite.Require().NoError(err)
 
 			subM, err := json.Marshal(tt.sub)
 			suite.Require().NoError(err)

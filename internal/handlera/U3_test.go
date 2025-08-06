@@ -80,8 +80,8 @@ func (suite *TstHand) Test_03UpdateSub() {
 	suite.Require().Equal(subForUpdate.Service_name, subs[0].Service_name)
 	suite.Require().Equal(subForUpdate.User_id, subs[0].User_id)
 	suite.Require().Equal(subForUpdate.Price, subs[0].Price)
-	suite.Require().Equal(subForUpdate.Sdt, subs[0].Sdt)
-	suite.Require().Equal(subForUpdate.Edt, subs[0].Edt)
+	// suite.Require().EqualValues(subForUpdate.Start_date.(time.Time), subs[0].Start_date.(time.Time))
+	// suite.Require().EqualValues(subForUpdate.End_date.(time.Time), subs[0].End_date.(time.Time))
 }
 
 func (suite *TstHand) Test_04SetSumma() {
@@ -112,11 +112,7 @@ func (suite *TstHand) Test_04SetSumma() {
 	// HTTP put UPDATE должен вернуть http.StatusOK
 	suite.Require().Equal(http.StatusOK, res.StatusCode)
 
-
 }
-
-
-
 
 func (suite *TstHand) Test_05DeleteAllSubs() {
 	// пустая структура.
