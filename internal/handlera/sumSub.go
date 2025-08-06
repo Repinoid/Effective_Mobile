@@ -58,6 +58,7 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 	if summa == 0 {
 		ret.Name = "Нет таких подписок"
 	}
+	models.Logger.Info("Сумма подписок ", "", ret)
 
 	json.NewEncoder(rwr).Encode(ret)
 }
@@ -106,6 +107,8 @@ func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 	if cTag.RowsAffected() == 0 {
 		ret.Name = "Не найдено записей на удаление, удовлетворяющих запросу"
 	}
+
+	models.Logger.Info("DELETE ", "", ret)
 
 	json.NewEncoder(rwr).Encode(ret)
 }

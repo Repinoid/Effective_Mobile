@@ -77,8 +77,9 @@ func Run(ctx context.Context) (err error) {
 
 	err = config.InitMigration(ctx, *cfg)
 	if err != nil {
-		models.Logger.Debug("sleep ...", "", *cfg)
-		time.Sleep(900 * time.Second)
+		// для отладки, спит 900 секунд - время для входа в контейнер docker exec -it sapp sh
+		// models.Logger.Debug("sleep ...", "", *cfg)
+		// time.Sleep(900 * time.Second)
 		return
 	}
 

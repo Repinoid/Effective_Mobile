@@ -52,8 +52,7 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return &Config{
+	cfg := Config{
 		DBUser:     GetEnv("DB_USER", "postgres"),
 		DBPassword: GetEnv("DB_PASSWORD", ""),
 		DBName:     GetEnv("DB_NAME", "postgres"),
@@ -61,8 +60,12 @@ func Load() (*Config, error) {
 		DBPort:     dbPort,
 		AppPort:    appPort,
 		AppHost:    GetEnv("APP_HOST", "0.0.0.0"),
-		PageSize:	pagesz,
-	}, nil
+		PageSize:   pagesz,
+	}
+
+	models.Logger.Info("Environment ", "vars", cfg)
+
+	return &cfg, nil
 }
 
 // GetEnv возвращает значение переменной окружения или значение по умолчанию

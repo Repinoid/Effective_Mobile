@@ -55,10 +55,12 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.WriteHeader(http.StatusOK)
 
 	if len(subs) != 0 {
+		models.Logger.Info("Read", "подписки", subs)
 		json.NewEncoder(rwr).Encode(subs)
 		return
 	}
-	
+
+	models.Logger.Info("Read - Не найдено записей")
 	ret := models.RetStruct{
 		Name: "Не найдено записей, удовлетворяющих запросу",
 		Cunt: 0,
@@ -123,7 +125,8 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 		ret.Name = "Не найдено записей, удовлетворяющих запросу"
 	}
 
-	rwr.WriteHeader(http.StatusOK)
+	models.Logger.Info("UPDATE", "", ret)
 
+	rwr.WriteHeader(http.StatusOK)
 	json.NewEncoder(rwr).Encode(ret)
 }

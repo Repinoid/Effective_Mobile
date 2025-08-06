@@ -51,11 +51,13 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 
 	rwr.WriteHeader(http.StatusOK)
-
+	
 	if len(subs) != 0 {
+		models.Logger.Info("Cписок", "подписки", subs)
 		json.NewEncoder(rwr).Encode(subs)
 		return
 	}
+	models.Logger.Info("Нет записей в подписках")
 
 	ret := models.RetStruct{
 		Name: "Нет записей в подписках",
