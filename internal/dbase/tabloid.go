@@ -232,6 +232,12 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	return
 }
 
+func (dataBase *DBstruct) CloseDB() {
+	dataBase.DB.Close()
+}
+
+
+
 //  docker exec -it pcontB psql -U testuser -d testdb -c "select * from subscriptions"
 
 // docker exec -it pcontB psql -U testuser -d testdb -c "SELECT service_name, start_date, end_date, EXTRACT(MONTH FROM end_date) FROM subscriptions"

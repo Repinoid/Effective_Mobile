@@ -38,15 +38,15 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer db.DB.Close()
+	defer models.Inter.CloseDB()
 
 	// subs []models.Subscription
-	subs, err := db.ReadSub(req.Context(), readSub)
+	subs, err := models.Inter.ReadSub(req.Context(), readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
@@ -90,15 +90,15 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
-	defer db.DB.Close()
+	defer models.Inter.CloseDB()
 
-	cTag, err := db.UpdateSub(req.Context(), readSub)
+	cTag, err := models.Inter.UpdateSub(req.Context(), readSub)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)

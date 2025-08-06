@@ -35,14 +35,14 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer db.DB.Close()
+	defer models.Inter.CloseDB()
 
-	summa, err := db.SumSub(req.Context(), readSub)
+	summa, err := models.Inter.SumSub(req.Context(), readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
@@ -79,14 +79,14 @@ func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer db.DB.Close()
+	defer models.Inter.CloseDB()
 
-	cTag, err := db.DeleteSub(req.Context(), readSub)
+	cTag, err := models.Inter.DeleteSub(req.Context(), readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return

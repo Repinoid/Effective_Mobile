@@ -85,15 +85,15 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
-	defer db.DB.Close()
+	defer models.Inter.CloseDB()
 
-	cTag, err := db.AddSub(req.Context(), sub)
+	cTag, err := models.Inter.AddSub(req.Context(), sub)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)

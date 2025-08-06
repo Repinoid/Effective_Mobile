@@ -36,15 +36,15 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	offset := (page - 1) * pageSize
 
-	db, err := dbase.NewPostgresPool(req.Context(), models.DSN)
+	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	defer db.DB.Close()
+	defer models.Inter.CloseDB()
 
 	// запрос в БД на получения списка всех подписок
-	subs, err := db.ListSub(req.Context(), pageSize, offset )
+	subs, err := models.Inter.ListSub(req.Context(), pageSize, offset )
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
