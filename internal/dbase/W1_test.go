@@ -149,4 +149,26 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	//  02, 03, 04 - 3 months
 	suite.Require().EqualValues(int64(700*3), summa)
 
+	// c апреля по июль ещё один подписчик
+	subA := models.Subscription{
+		Service_name: "Чаян",
+		Price:        700,
+		User_id:      uuid.NewString(),
+		Start_date:   "11-04-2025",
+		End_date:     "07-2025",
+	}
+
+	err = models.MakeTT(&subA)
+	suite.Require().NoError(err)
+
+	cTag, err = suite.dataBase.AddSub(suite.ctx, subA)
+	suite.Require().NoError(err)
+	// 1 - запись добавилась
+	suite.Require().EqualValues(1, cTag.RowsAffected())
+
+	summa, err = suite.dataBase.SumSub(suite.ctx, checkP)
+	suite.Require().NoError(err)
+	//  02, 03, 04 - 3 months плюс один месяц по subA
+	suite.Require().EqualValues(int64(700*4), summa)
+
 }
