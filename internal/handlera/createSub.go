@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/uuid"
 )
-
+ 
 // DBPinger godoc
 // @Summary Database health check
 // @Description Checks if database connection is alive
