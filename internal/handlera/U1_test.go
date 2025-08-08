@@ -49,16 +49,6 @@ func (suite *TstHand) Test_01AddSub() {
 			status: http.StatusOK,
 			reply:  `{"status":"OK"}`,
 		},
-		// {
-		// 	name: "Same user_id & service_name",
-		// 	sub: func() models.Subscription {
-		// 		s := sub
-		// 		s.Price = 100
-		// 		return s
-		// 	}(),
-		// 	status: http.StatusInternalServerError,
-		// 	reply:  `{"status":"no price"}`,
-		// },
 		{
 			name: "No Price",
 			sub: func() models.Subscription {

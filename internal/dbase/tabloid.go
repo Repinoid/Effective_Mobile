@@ -164,22 +164,49 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (summa int64, err error) {
 
 	//  если конечная дата подписки не задана - устанавлiваем в максимально возможное значение
-	//
-	//  Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
+	//  			Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
 	if sub.End_date == nil {
 		sub.End_date = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
 
+	// GREATEST($3::DATE, start_date) - начало общего интервала подписка-условие, LEAST($4::DATE, end_date) - окончание
+	// разница (конец минус начало) может быть отрицательной (отрезки не пересекаются), 
+	// поэтому проверка условия dv.effective_start <= dv.effective_end
 	order := `
-	SELECT COALESCE(SUM(price * 
-		((EXTRACT(YEAR FROM LEAST($4::date, end_date)) - EXTRACT(YEAR FROM GREATEST($3::date, start_date))) * 12 + 
-		(EXTRACT(MONTH FROM LEAST($4::date, end_date)) - EXTRACT(MONTH FROM GREATEST($3::date, start_date))) + 1
-			)), 0) AS total_price
-		FROM subscriptions
-	 	WHERE ($1 = '' OR service_name = $1)
-	 	AND ($2 = '' OR user_id = $2::uuid)
-	 	AND GREATEST($3, start_date) <= LEAST($4, end_date)
+		WITH date_vars AS (
+			SELECT id, 
+			GREATEST($3::DATE, start_date) AS effective_start, 
+			LEAST($4::DATE, end_date) AS effective_end,
+			AGE( LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date) ) AS age_interval
+			FROM subscriptions
+		)
+		SELECT SUM(
+			s.price *
+			(
+				-- разница в месяцах ПЛЮС 1, т.к. месяц начала и окончания подписки могут совпадать
+				EXTRACT(YEAR FROM age_interval) * 12 +
+				EXTRACT(MONTH FROM age_interval) + 1
+			)
+			) AS total_price
+		FROM subscriptions s
+		JOIN date_vars dv USING(id)
+		-- наименование подписки - либо пусто, либо соответствие табличному
+		WHERE ($1 = '' OR s.service_name = $1)
+		AND ($2 = '' OR s.user_id = $2::UUID)
+		-- условие пересечения временнЫх отрезков
+		AND dv.effective_start <= dv.effective_end;
 	`
+
+	// order := `
+	// SELECT COALESCE(SUM(price *
+	// 	((EXTRACT(YEAR FROM LEAST($4::date, end_date)) - EXTRACT(YEAR FROM GREATEST($3::date, start_date))) * 12 +
+	// 	(EXTRACT(MONTH FROM LEAST($4::date, end_date)) - EXTRACT(MONTH FROM GREATEST($3::date, start_date))) + 1
+	// 		)), 0) AS total_price
+	// 	FROM subscriptions
+	//  	WHERE ($1 = '' OR service_name = $1)
+	//  	AND ($2 = '' OR user_id = $2::uuid)
+	//  	AND GREATEST($3, start_date) <= LEAST($4, end_date)
+	// `
 
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Start_date, sub.End_date)
 	summa = 0

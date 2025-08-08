@@ -12,7 +12,7 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 	type Alias Subscription
 	temp := &struct {
 		StartDate string `json:"start_date"`
-		EndDate   string `json:"end_date,omitempty"`
+		EndDate   string `json:"end_date"`
 		*Alias
 	}{
 		Alias: (*Alias)(sub),
