@@ -37,7 +37,7 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 // 	ParseDate принимает строковую дату, возвращает time.Time или nil. Отсекает день месяца, устанавливает в 1е число месяца - подписка помесячно, даты не важны
 func ParseDate(date string) (tim any, err error) {
 
-	// если дата пустая, возвращаем пустое (начальное) время, которое .IsZero() true
+	// если дата пустая
 	if date == "" {
 		return nil, nil
 	}
