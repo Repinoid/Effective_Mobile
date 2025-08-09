@@ -94,13 +94,22 @@ func (dataBase *DBstruct) ListSub(ctx context.Context, pageSize, offset int) (su
 
 func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) (subs []models.Subscription, err error) {
 
-	order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
-		"service_name=$1 AND " +
-		"($2::int = 0 OR price = $2::int) AND " +
-		"user_id=$3::uuid AND " +
+	order := `
+		SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE 
+		service_name=$1 AND 
+		($2::int = 0 OR price = $2::int) AND
+		user_id=$3::uuid AND
+		(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND 
+		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00') ;
+	`
 
-		"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
-		"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
+	// order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
+	// 	"service_name=$1 AND " +
+	// 	"($2::int = 0 OR price = $2::int) AND " +
+	// 	"user_id=$3::uuid AND " +
+
+	// 	"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
+	// 	"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
 
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
