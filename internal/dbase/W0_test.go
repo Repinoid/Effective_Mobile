@@ -120,4 +120,20 @@ func TestHandlersSuite(t *testing.T) {
 
 }
 
+// MakeTT используется в функциях тестов, преобразует поля со строковыми датами в time.Time
+func MakeTT(sub *models.Subscription) (err error) {
+
+	switch sub.Start_date.(type) {
+	case string:
+		sub.Start_date, _ = models.ParseDate(sub.Start_date.(string))
+	}
+	switch sub.End_date.(type) {
+	case string:
+		sub.End_date, _ = models.ParseDate(sub.End_date.(string))
+	}
+	return
+}
+
+
+
 // docker exec -it pcont psql -U testuser -d testdb

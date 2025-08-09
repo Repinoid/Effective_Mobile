@@ -17,7 +17,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		Start_date: "01-02-2025",
 		End_date:   "11-2025",
 	}
-	err := models.MakeTT(&subG)
+	err := MakeTT(&subG)
 	suite.Require().NoError(err)
 
 	// трём таблицу передав пустую запись
@@ -40,7 +40,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	sub1 := subG
 	sub1.End_date = nil
 	sub1.Price = 0
-	models.MakeTT(&sub1)
+	MakeTT(&sub1)
 
 	// генерируем user_id
 	sub1.User_id = uuid.NewString()
@@ -121,7 +121,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		End_date:   "11-2025",
 	}
 
-	err = models.MakeTT(&subP)
+	err = MakeTT(&subP)
 	suite.Require().NoError(err)
 
 	cTag, err = suite.dataBase.AddSub(suite.ctx, subP)
@@ -136,7 +136,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		End_date:   "04-2025",
 	}
 
-	err = models.MakeTT(&checkP)
+	err = MakeTT(&checkP)
 	suite.Require().NoError(err)
 
 	summa, err := suite.dataBase.SumSub(suite.ctx, checkP)
@@ -153,7 +153,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		End_date:     "07-2025",
 	}
 
-	err = models.MakeTT(&subA)
+	err = MakeTT(&subA)
 	suite.Require().NoError(err)
 
 	cTag, err = suite.dataBase.AddSub(suite.ctx, subA)

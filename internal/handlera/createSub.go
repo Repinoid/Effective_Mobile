@@ -12,7 +12,7 @@ import (
 
 	"github.com/google/uuid"
 )
- 
+
 // DBPinger godoc
 // @Summary Database health check
 // @Description Checks if database connection is alive
@@ -48,39 +48,48 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	sub := models.Subscription{}
 	err := json.NewDecoder(req.Body).Decode(&sub)
 	if err != nil {
-		http.Error(rwr, err.Error(), http.StatusBadRequest)
+		models.Logger.Error("json", "NewDecoder", err)
+		rwr.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(rwr).Encode(err)
 		return
 	}
 
 	if sub.Service_name == "" {
+		models.Logger.Error("no service name")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no service name"))
 		return
 	}
 	if sub.Price == 0 {
+		models.Logger.Error("no price")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no price"))
 		return
 	}
 	if sub.User_id == "" {
+		models.Logger.Error("no user_id")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no user_id"))
 		return
 	}
 	_, err = uuid.Parse(sub.User_id)
 	if err != nil {
+		models.Logger.Error("bad user_id, not UUID format")
 		rwr.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(rwr).Encode(errors.New("bad user_id"))
+		json.NewEncoder(rwr).Encode(errors.New("bad user_id, not UUID format"))
 		return
 	}
 
-	if sub.Start_date == nil {
+	if sub.Start_date.(time.Time).IsZero() {
+		models.Logger.Error("no start date")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no start date"))
 		return
 	}
 	// если при непустой конечной дате она раньше начальной
-	if sub.End_date != nil && sub.End_date.(time.Time).Before(sub.Start_date.(time.Time)) {
+	// json.NewDecoder(req.Body).Decode(&sub) размаршаллил и в sub.*_date дата в формате time.Time
+	if !sub.End_date.(time.Time).IsZero()  && sub.End_date.(time.Time).Before(sub.Start_date.(time.Time)) {
+		models.Logger.Error("end date before start")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("end date before start"))
 		return
@@ -88,23 +97,27 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 
 	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
 	if err != nil {
+		models.Logger.Error("NewPostgresPool", "", err)
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
 	defer models.Inter.CloseDB()
-
+	
 	cTag, err := models.Inter.AddSub(req.Context(), sub)
 	if err != nil {
+		models.Logger.Error("AddSub table method", "", err)
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
 		return
 	}
-
+	
 	ret := models.RetStruct{
 		Name: "Внесено записей",
 		Cunt: cTag.RowsAffected(),
 	}
+	
+	models.Logger.Info("Подписка успешно создана", "", sub)
 
 	rwr.WriteHeader(http.StatusOK)
 	json.NewEncoder(rwr).Encode(ret)

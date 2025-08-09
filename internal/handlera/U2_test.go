@@ -39,7 +39,7 @@ func (suite *TstHand) Test_02ReadSub() {
 			name: "start date less than recorded",
 			sub: func() models.Subscription {
 				s := sub
-				s.Start_date = "02-01-25"
+				s.Start_date = "01-25"
 				return s
 			}(),
 			status:  http.StatusOK,
@@ -68,7 +68,7 @@ func (suite *TstHand) Test_02ReadSub() {
 			name: "Normaldu with start date",
 			sub: func() models.Subscription {
 				s := sub
-				s.Start_date = "02-02-25"
+				s.Start_date = "02-25"
 				return s
 			}(),
 			status:  http.StatusOK,
@@ -79,7 +79,7 @@ func (suite *TstHand) Test_02ReadSub() {
 			name: "end date more than recorded",
 			sub: func() models.Subscription {
 				s := sub
-				s.End_date = "02-01-35"
+				s.End_date = "01-35"
 				return s
 			}(),
 			status:  http.StatusOK,

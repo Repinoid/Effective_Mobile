@@ -55,7 +55,7 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.WriteHeader(http.StatusOK)
 
 	if len(subs) != 0 {
-		models.Logger.Info("Read", "подписки", subs)
+		models.Logger.Info("Найдено", "подписок", len(subs))
 		json.NewEncoder(rwr).Encode(subs)
 		return
 	}

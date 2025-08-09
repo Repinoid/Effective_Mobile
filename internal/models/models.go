@@ -21,8 +21,6 @@ type Subscription struct {
 	User_id      string `json:"user_id"`      // “user_id”: “60601fee-2bf1-4721-ae6f-7636e79a0cba”,
 	Start_date   any    `json:"start_date"`   // “start_date”: “07-2025”
 	End_date     any    `json:"end_date"`     // “start_date”: “07-2025”
-	// Sdt          any    `json:"-"`                  // немаршалемое
-	// Edt          any    `json:"-"`
 }
 
 type RetStruct struct {

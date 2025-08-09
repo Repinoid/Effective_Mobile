@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 )
+
 // переопределение метода анмаршаллинга для типа Subscription
 func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 
@@ -34,48 +35,32 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 	return
 }
 
-// 	ParseDate принимает строковую дату, возвращает time.Time или nil. Отсекает день месяца, устанавливает в 1е число месяца - подписка помесячно, даты не важны
-func ParseDate(date string) (tim any, err error) {
-
+// ParseDate принимает строковую дату, возвращает time.Time или nil. Отсекает день месяца, устанавливает в 1е число месяца - подписка помесячно, даты не важны
+func ParseDate(date string) (time.Time, error) {
 	// если дата пустая
 	if date == "" {
-		return nil, nil
+		return time.Time{}, nil
 	}
 
-	// парсим по день-месяц-год
-	// если ок - возвращаем
-	if t, err := time.Parse("02-01-2006", date); err == nil {
-		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()), nil
-	}
-	// пробуем месяц-год
-	if t, err := time.Parse("01-2006", date); err == nil {
-		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()), nil
-	}
-	// парсим по день-месяц-год
-	if t, err := time.Parse("02-01-06", date); err == nil {
-		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()), nil
-	}
-	// пробуем месяц-год
+	// парсим месяц-год с двухзначным годом (например, 01-25)
 	if t, err := time.Parse("01-06", date); err == nil {
-		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()), nil
+		year := t.Year()
+		if year < 100 {
+			year += 2000 // интерпретируем как 2000+год
+		}
+		return time.Date(year, t.Month(), 1, 0, 0, 0, 0, time.UTC), nil
 	}
+
+	// парсим месяц-год с четырьмя цифрами (например, 01-2025)
+	if t, err := time.Parse("01-2006", date); err == nil {
+		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.UTC), nil
+	}
+
+	// парсим по стандарту RFC3339, игнорируем время и день
 	if t, err := time.Parse(time.RFC3339, date); err == nil {
-		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location()), nil
+		return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, time.UTC), nil
 	}
 
-	return nil, errors.New("неверный формат даты")
+	return time.Time{}, errors.New("неверный формат даты")
 }
 
-// MakeTT используется в функциях тестов, преобразует поля со строковыми датами в time.Time
-func MakeTT(sub *Subscription) (err error) {
-
-	switch sub.Start_date.(type) {
-	case string:
-		sub.Start_date, _ = ParseDate(sub.Start_date.(string))
-	}
-	switch sub.End_date.(type) {
-	case string:
-		sub.End_date, _ = ParseDate(sub.End_date.(string))
-	}
-	return
-}

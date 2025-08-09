@@ -61,11 +61,11 @@ func Ping(ctx context.Context) error {
 
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	if sub.End_date == nil {
-		order := "INSERT INTO subscriptions(service_name, price, user_id, start_date) VALUES ($1, $2, $3, $4) ;"
-		cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date)
-		return
-	}
+	// if sub.End_date.(time.Time).IsZero() {
+	// 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date) VALUES ($1, $2, $3, $4) ;"
+	// 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date)
+	// 	return
+	// }
 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 
@@ -83,15 +83,9 @@ func (dataBase *DBstruct) ListSub(ctx context.Context, pageSize, offset int) (su
 
 	for rows.Next() {
 		sub := models.Subscription{}
-		// Start_time ||& End_time могут быть NULL. поэтому в Scan подставляем переменные sql.NullTime
-		var sdt, edt sql.NullTime
-		// err := row.Scan(&createdAt)
-		// if createdAt.Valid {}
-		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
+		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sub.Start_date, &sub.End_date); err != nil {
 			return nil, err
 		}
-		sub.Start_date = sdt.Time
-		sub.End_date = edt.Time
 		subs = append(subs, sub)
 	}
 
@@ -105,8 +99,8 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		"($2::int = 0 OR price = $2::int) AND " +
 		"user_id=$3::uuid AND " +
 
-		"(start_date <= $4 OR $4 IS NULL) AND " +
-		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
+		"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
+		"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
 
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
@@ -130,12 +124,10 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 
 func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	// comments on ReadSub
-	// comments on ReadSub
 	order := "UPDATE subscriptions SET " +
 		"price = CASE WHEN $1::int != 0 THEN $1 ELSE price END, " +
-		"start_date=COALESCE($2, start_date), " +
-		"end_date=COALESCE($3, end_date) " +
+		"start_date=$2, " +
+		"end_date=$3 " +
 		"WHERE service_name=$4 AND user_id=$5::uuid;"
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Start_date, sub.End_date, sub.Service_name, sub.User_id)
@@ -150,8 +142,8 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		"( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
 		"($3 = '' OR user_id = $3::uuid) AND " +
 
-		"(start_date <= $4 OR $4 IS NULL) AND " +
-		"(end_date >= $5 OR $5 IS NULL OR end_date IS NULL);"
+		"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
+		"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
@@ -170,7 +162,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	}
 
 	// GREATEST($3::DATE, start_date) - начало общего интервала подписка-условие, LEAST($4::DATE, end_date) - окончание
-	// разница (конец минус начало) может быть отрицательной (отрезки не пересекаются), 
+	// разница (конец минус начало) может быть отрицательной (отрезки не пересекаются),
 	// поэтому проверка условия dv.effective_start <= dv.effective_end
 	order := `
 		WITH date_vars AS (

@@ -16,8 +16,8 @@ func (suite *TstHand) Test_03UpdateSub() {
 		Service_name: "Yandex Plus", //
 		Price:        666,
 		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-		Start_date:   "08-08-08",
-		End_date:     "24-02-22",
+		Start_date:   "08-08",
+		End_date:     "02-22",
 	}
 
 	subM, err := json.Marshal(subForUpdate)
@@ -90,8 +90,8 @@ func (suite *TstHand) Test_04SetSumma() {
 		Service_name: "Yandex Plus", //
 		Price:        666,
 		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-		Start_date:   "08-08-08",
-		End_date:     "24-02-22",
+		Start_date:   "08-08",
+		End_date:     "02-22",
 	}
 
 	subM, err := json.Marshal(subForUpdate)
