@@ -103,14 +103,6 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00') ;
 	`
 
-	// order := "SELECT service_name, price, user_id, start_date, end_date FROM subscriptions WHERE " +
-	// 	"service_name=$1 AND " +
-	// 	"($2::int = 0 OR price = $2::int) AND " +
-	// 	"user_id=$3::uuid AND " +
-
-	// 	"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
-	// 	"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
-
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
 		return nil, err
@@ -131,13 +123,17 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 	return
 }
 
+// UpdateSub - обновление данных подписки 
 func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	order := "UPDATE subscriptions SET " +
-		"price = CASE WHEN $1::int != 0 THEN $1 ELSE price END, " +
-		"start_date=$2, " +
-		"end_date=$3 " +
-		"WHERE service_name=$4 AND user_id=$5::uuid;"
+	order := `
+		UPDATE subscriptions SET 
+		-- если sub.Price == 0 оставить в таблице прежнее значение price
+		price = COALESCE(NULLIF($1, 0), price),
+		start_date=$2, 
+		end_date=$3 
+		WHERE service_name=$4 AND user_id=$5::uuid;
+	`
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Start_date, sub.End_date, sub.Service_name, sub.User_id)
 
@@ -146,13 +142,23 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 
 func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	order := "DELETE FROM subscriptions WHERE " +
-		"($1 = '' OR service_name = $1) AND " +
-		"( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
-		"($3 = '' OR user_id = $3::uuid) AND " +
+	order := `
+		DELETE FROM subscriptions WHERE 
+		($1 = '' OR service_name = $1) AND 
+		-- ( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND 
+		( ($2::int = 0) OR (price = $2::int) ) AND
+		($3 = '' OR user_id = $3::uuid) AND
+		(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND
+		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');
+	`
 
-		"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
-		"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
+	// order := "DELETE FROM subscriptions WHERE " +
+	// 	"($1 = '' OR service_name = $1) AND " +
+	// 	"( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
+	// 	"($3 = '' OR user_id = $3::uuid) AND " +
+
+	// 	"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
+	// 	"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {

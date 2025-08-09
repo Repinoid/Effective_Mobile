@@ -2,6 +2,7 @@ package dbase
 
 import (
 	"emobile/internal/models"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -14,7 +15,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		Price:        400,
 		User_id:      uuid.NewString(),
 		// User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-		Start_date: "01-02-2025",
+		Start_date: "02-2025",
 		End_date:   "11-2025",
 	}
 	err := MakeTT(&subG)
@@ -38,7 +39,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 
 	// структура "плоская", без указателей, поэтому копия независимая
 	sub1 := subG
-	sub1.End_date = nil
+	sub1.End_date = time.Time{}
 	sub1.Price = 0
 	MakeTT(&sub1)
 
@@ -117,7 +118,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		Price:        700,
 		User_id:      uuid.NewString(),
 		// User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-		Start_date: "01-02-2025",
+		Start_date: "02-2025",
 		End_date:   "11-2025",
 	}
 
@@ -132,7 +133,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 	checkP := models.Subscription{
 		Service_name: "Чаян",
 		//		User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-		Start_date: "03-02-2025",
+		Start_date: "02-2025",
 		End_date:   "04-2025",
 	}
 
@@ -149,7 +150,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 		Service_name: "Чаян",
 		Price:        700,
 		User_id:      uuid.NewString(),
-		Start_date:   "11-04-2025",
+		Start_date:   "04-25",
 		End_date:     "07-2025",
 	}
 
