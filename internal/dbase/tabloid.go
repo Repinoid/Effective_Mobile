@@ -59,13 +59,9 @@ func Ping(ctx context.Context) error {
 	return nil
 }
 
+// AddSub добавление подписки в Базу Данных. 
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	// if sub.End_date.(time.Time).IsZero() {
-	// 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date) VALUES ($1, $2, $3, $4) ;"
-	// 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date)
-	// 	return
-	// }
 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 
@@ -145,21 +141,11 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 	order := `
 		DELETE FROM subscriptions WHERE 
 		($1 = '' OR service_name = $1) AND 
-		-- ( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND 
 		( ($2::int = 0) OR (price = $2::int) ) AND
 		($3 = '' OR user_id = $3::uuid) AND
 		(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND
 		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');
 	`
-
-	// order := "DELETE FROM subscriptions WHERE " +
-	// 	"($1 = '' OR service_name = $1) AND " +
-	// 	"( ($2::int = 0) OR ($2::int != 0 AND price = $2::int) ) AND " +
-	// 	"($3 = '' OR user_id = $3::uuid) AND " +
-
-	// 	"(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND " +
-	// 	"(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');"
-
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
@@ -190,30 +176,20 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 		SELECT SUM(
 			s.price *
 			(
-				-- разница в месяцах ПЛЮС 1, т.к. месяц начала и окончания подписки могут совпадать
+				-- разница в месяцах ПЛЮС 1, т.к. учитывается не разница end-start, а все месяцы в этом интервале
 				EXTRACT(YEAR FROM age_interval) * 12 +
 				EXTRACT(MONTH FROM age_interval) + 1
 			)
 			) AS total_price
 		FROM subscriptions s
 		JOIN date_vars dv USING(id)
-		-- наименование подписки - либо пусто, либо соответствие табличному
-		WHERE ($1 = '' OR s.service_name = $1)
-		AND ($2 = '' OR s.user_id = $2::UUID)
+		WHERE 
+		-- наименование подписки & user_id - либо пусто, либо соответствие табличному
+		($1 = '' OR s.service_name = $1) AND
+		($2 = '' OR s.user_id = $2::UUID) AND
 		-- условие пересечения временнЫх отрезков
-		AND dv.effective_start <= dv.effective_end;
+		dv.effective_start <= dv.effective_end ;
 	`
-
-	// order := `
-	// SELECT COALESCE(SUM(price *
-	// 	((EXTRACT(YEAR FROM LEAST($4::date, end_date)) - EXTRACT(YEAR FROM GREATEST($3::date, start_date))) * 12 +
-	// 	(EXTRACT(MONTH FROM LEAST($4::date, end_date)) - EXTRACT(MONTH FROM GREATEST($3::date, start_date))) + 1
-	// 		)), 0) AS total_price
-	// 	FROM subscriptions
-	//  	WHERE ($1 = '' OR service_name = $1)
-	//  	AND ($2 = '' OR user_id = $2::uuid)
-	//  	AND GREATEST($3, start_date) <= LEAST($4, end_date)
-	// `
 
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Start_date, sub.End_date)
 	summa = 0
