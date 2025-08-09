@@ -1,6 +1,7 @@
 package handlera
 
 import (
+	"database/sql"
 	"emobile/internal/dbase"
 	"emobile/internal/models"
 	"encoding/json"
@@ -43,7 +44,7 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 	defer models.Inter.CloseDB()
 
 	summa, err := models.Inter.SumSub(req.Context(), readSub)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -55,7 +56,7 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 		Cunt: summa,
 	}
 
-	if summa == 0 {
+	if summa == 0 || err == sql.ErrNoRows {
 		ret.Name = "Нет таких подписок"
 	}
 	models.Logger.Info("Сумма подписок ", "", ret)

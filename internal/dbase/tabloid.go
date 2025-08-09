@@ -23,7 +23,7 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 	poolConfig, err := pgxpool.ParseConfig(DSN)
 	//	poolConfig, err := pgxpool.ParseConfig(models.DSN)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse configuration: %w", err)
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -31,11 +31,11 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create connection pool: %w", err)
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to ping the database: %w", err)
 	}
 
 	dbStorage := &DBstruct{}
@@ -190,6 +190,20 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 		-- условие пересечения временнЫх отрезков
 		dv.effective_start <= dv.effective_end ;
 	`
+
+		// WITH filtered_subscriptions AS (
+		//     SELECT id, service_name, price, start_date, end_date
+		//     FROM subscriptions
+		//     WHERE
+		//         ($1 = '' OR service_name = $1) AND
+		//         ($2 = '' OR user_id = $2::UUID) AND
+		//         GREATEST($3::DATE, start_date) <= LEAST($4::DATE, end_date)
+		// )
+		// SELECT SUM(price * (
+		//     EXTRACT(YEAR FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) * 12 +
+		//     EXTRACT(MONTH FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) + 1
+		// ))
+		// FROM filtered_subscriptions;
 
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Start_date, sub.End_date)
 	summa = 0
