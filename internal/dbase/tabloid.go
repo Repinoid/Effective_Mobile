@@ -38,10 +38,10 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 		return nil, fmt.Errorf("failed to ping the database: %w", err)
 	}
 
-	dbStorage := &DBstruct{}
-	dbStorage.DB = pool
+	// dbStorage := &DBstruct{DB: pool}
+	// dbStorage.DB = pool
 
-	return dbStorage, nil
+	return &DBstruct{DB: pool}, nil
 }
 
 func Ping(ctx context.Context) error {
@@ -59,7 +59,7 @@ func Ping(ctx context.Context) error {
 	return nil
 }
 
-// AddSub добавление подписки в Базу Данных. 
+// AddSub добавление подписки в Базу Данных.
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
@@ -98,21 +98,20 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND 
 		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00') ;
 	`
-		// SELECT service_name, price, user_id, start_date, end_date
-		// FROM subscriptions
-		// WHERE service_name = $1
-		// AND ($2::int = 0 OR price = $2::int)
-		// AND user_id = $3::uuid
-		// AND (
-		// 	start_date <= $4
-		// 	OR $4 = '0001-01-01 00:00:00'
-		// )
-		// AND (
-		// 	end_date >= $5
-		// 	OR $5 = '0001-01-01 00:00:00'
-		// 	OR end_date = '0001-01-01 00:00:00'
-		// );
-
+	// SELECT service_name, price, user_id, start_date, end_date
+	// FROM subscriptions
+	// WHERE service_name = $1
+	// AND ($2::int = 0 OR price = $2::int)
+	// AND user_id = $3::uuid
+	// AND (
+	// 	start_date <= $4
+	// 	OR $4 = '0001-01-01 00:00:00'
+	// )
+	// AND (
+	// 	end_date >= $5
+	// 	OR $5 = '0001-01-01 00:00:00'
+	// 	OR end_date = '0001-01-01 00:00:00'
+	// );
 
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
@@ -134,7 +133,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 	return
 }
 
-// UpdateSub - обновление данных подписки 
+// UpdateSub - обновление данных подписки
 func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	order := `
@@ -146,14 +145,14 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 		WHERE service_name=$4 AND user_id=$5::uuid;
 	`
 
-		// UPDATE subscriptions
-		// SET
-		// 	price = COALESCE(NULLIF($1, 0), price),
-		// 	start_date = $2,
-		// 	end_date = $3
-		// WHERE
-		// 	service_name = $4
-		// 	AND user_id = $5::uuid;	
+	// UPDATE subscriptions
+	// SET
+	// 	price = COALESCE(NULLIF($1, 0), price),
+	// 	start_date = $2,
+	// 	end_date = $3
+	// WHERE
+	// 	service_name = $4
+	// 	AND user_id = $5::uuid;
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Start_date, sub.End_date, sub.Service_name, sub.User_id)
 
@@ -171,14 +170,13 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');
 	`
 
-		// DELETE FROM subscriptions
-		// WHERE
-		// (service_name = $1 OR $1 = '')
-		// AND (price = $2 OR $2::int = 0)
-		// AND (user_id = $3 OR $3 = '')
-		// AND (start_date <= $4 OR $4 = '0001-01-01 00:00:00')
-		// AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date = '0001-01-01 00:00:00');
-
+	// DELETE FROM subscriptions
+	// WHERE
+	// (service_name = $1 OR $1 = '')
+	// AND (price = $2 OR $2::int = 0)
+	// AND (user_id = $3 OR $3 = '')
+	// AND (start_date <= $4 OR $4 = '0001-01-01 00:00:00')
+	// AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date = '0001-01-01 00:00:00');
 
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
@@ -225,19 +223,19 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 		dv.effective_start <= dv.effective_end ;
 	`
 
-		// WITH filtered_subscriptions AS (
-		//     SELECT id, service_name, price, start_date, end_date
-		//     FROM subscriptions
-		//     WHERE
-		//         ($1 = '' OR service_name = $1) AND
-		//         ($2 = '' OR user_id = $2::UUID) AND
-		//         GREATEST($3::DATE, start_date) <= LEAST($4::DATE, end_date)
-		// )
-		// SELECT SUM(price * (
-		//     EXTRACT(YEAR FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) * 12 +
-		//     EXTRACT(MONTH FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) + 1
-		// ))
-		// FROM filtered_subscriptions;
+	// WITH filtered_subscriptions AS (
+	//     SELECT id, service_name, price, start_date, end_date
+	//     FROM subscriptions
+	//     WHERE
+	//         ($1 = '' OR service_name = $1) AND
+	//         ($2 = '' OR user_id = $2::UUID) AND
+	//         GREATEST($3::DATE, start_date) <= LEAST($4::DATE, end_date)
+	// )
+	// SELECT SUM(price * (
+	//     EXTRACT(YEAR FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) * 12 +
+	//     EXTRACT(MONTH FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) + 1
+	// ))
+	// FROM filtered_subscriptions;
 
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Start_date, sub.End_date)
 	summa = 0
