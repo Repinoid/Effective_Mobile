@@ -98,6 +98,21 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND 
 		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00') ;
 	`
+		// SELECT service_name, price, user_id, start_date, end_date
+		// FROM subscriptions
+		// WHERE service_name = $1
+		// AND ($2::int = 0 OR price = $2::int)
+		// AND user_id = $3::uuid
+		// AND (
+		// 	start_date <= $4
+		// 	OR $4 = '0001-01-01 00:00:00'
+		// )
+		// AND (
+		// 	end_date >= $5
+		// 	OR $5 = '0001-01-01 00:00:00'
+		// 	OR end_date = '0001-01-01 00:00:00'
+		// );
+
 
 	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
@@ -131,6 +146,15 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 		WHERE service_name=$4 AND user_id=$5::uuid;
 	`
 
+		// UPDATE subscriptions
+		// SET
+		// 	price = COALESCE(NULLIF($1, 0), price),
+		// 	start_date = $2,
+		// 	end_date = $3
+		// WHERE
+		// 	service_name = $4
+		// 	AND user_id = $5::uuid;	
+
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Start_date, sub.End_date, sub.Service_name, sub.User_id)
 
 	return
@@ -146,6 +170,16 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND
 		(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');
 	`
+
+		// DELETE FROM subscriptions
+		// WHERE
+		// (service_name = $1 OR $1 = '')
+		// AND (price = $2 OR $2::int = 0)
+		// AND (user_id = $3 OR $3 = '')
+		// AND (start_date <= $4 OR $4 = '0001-01-01 00:00:00')
+		// AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date = '0001-01-01 00:00:00');
+
+
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
