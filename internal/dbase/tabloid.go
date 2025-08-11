@@ -237,14 +237,20 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	// ))
 	// FROM filtered_subscriptions;
 
+	var nullsum sql.NullInt64
+	
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Start_date, sub.End_date)
-	summa = 0
-	err = row.Scan(&summa)
+
+	err = row.Scan(&nullsum)
 	if err != nil {
 		return 0, err
 	}
+	if nullsum.Valid {
+		summa = nullsum.Int64
+		return
+	}
 
-	return
+	return 0, sql.ErrNoRows
 }
 
 func (dataBase *DBstruct) CloseDB() {

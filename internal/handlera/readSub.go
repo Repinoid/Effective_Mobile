@@ -1,7 +1,6 @@
 package handlera
 
 import (
-	"emobile/internal/dbase"
 	"emobile/internal/models"
 	"encoding/json"
 	"errors"
@@ -38,12 +37,12 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	if err != nil {
-		http.Error(rwr, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer models.Inter.CloseDB()
+	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
+	// if err != nil {
+	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer models.Inter.CloseDB()
 
 	// subs []models.Subscription
 	subs, err := models.Inter.ReadSub(req.Context(), readSub)
@@ -102,13 +101,13 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	if err != nil {
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
-		return
-	}
-	defer models.Inter.CloseDB()
+	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
+	// if err != nil {
+	// 	rwr.WriteHeader(http.StatusInternalServerError)
+	// 	json.NewEncoder(rwr).Encode(err)
+	// 	return
+	// }
+	// defer models.Inter.CloseDB()
 
 	cTag, err := models.Inter.UpdateSub(req.Context(), readSub)
 	if err != nil {

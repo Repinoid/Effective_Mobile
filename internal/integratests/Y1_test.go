@@ -1,4 +1,4 @@
-package main
+package integratests
 
 import (
 	"emobile/internal/models"
@@ -13,7 +13,7 @@ var sub = models.Subscription{
 	Service_name: "Жейминь Жибао",
 	Price:        400,
 	//	User_id:      "60601fee-2bf1-4721-ae6f-7636e79a0cba",
-	Start_date: "01-02-2020",
+	Start_date: "02-2020",
 	End_date:   "11-2029",
 }
 
@@ -68,8 +68,8 @@ func (suite *TS) Test_01() {
 	suite.Require().Equal(subs[0].User_id, sub1.User_id)
 
 	sub2 := sub
-	sub2.Start_date = "01-02-2010"
-	sub2.End_date = "01-02-2019"
+	sub2.Start_date = "02-2010"
+	sub2.End_date = "02-2019"
 	req = httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
 		SetBody(sub2)
 	resp, err = req.Post("/summa")
@@ -78,7 +78,7 @@ func (suite *TS) Test_01() {
 
 	suite.Require().JSONEq(`{"Cunt":0, "Name":"Нет таких подписок"}`, resp.String())
 
-	sub2.End_date = "01-02-2020"
+	sub2.End_date = "02-2020"
 	req = httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
 		SetBody(sub2)
 	resp, err = req.Post("/summa")
@@ -89,8 +89,8 @@ func (suite *TS) Test_01() {
 
 	// внесём подписку в щастливом будущем
 	sub3 := sub2
-	sub3.Start_date = "01-02-2040"
-	sub3.End_date = "01-02-2050"
+	sub3.Start_date = "02-2040"
+	sub3.End_date = "02-2050"
 	sub3.Service_name = "Партизан Приморья"
 	sub3.User_id = ui
 	req = httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).

@@ -2,7 +2,6 @@ package handlera
 
 import (
 	"database/sql"
-	"emobile/internal/dbase"
 	"emobile/internal/models"
 	"encoding/json"
 	"net/http"
@@ -29,19 +28,19 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// должны быть определены Service_name или User_id, и диапазон дат
+
 	if (readSub.Service_name == "" && readSub.User_id == "") ||
 		readSub.End_date == nil || readSub.Start_date == nil {
 		http.Error(rwr, "не все данные указаны", http.StatusBadRequest)
 		return
 	}
 
-	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	if err != nil {
-		http.Error(rwr, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer models.Inter.CloseDB()
+	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
+	// if err != nil {
+	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer models.Inter.CloseDB()
 
 	summa, err := models.Inter.SumSub(req.Context(), readSub)
 	if err != nil && err != sql.ErrNoRows {
@@ -85,12 +84,12 @@ func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	if err != nil {
-		http.Error(rwr, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer models.Inter.CloseDB()
+	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
+	// if err != nil {
+	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer models.Inter.CloseDB()
 
 	cTag, err := models.Inter.DeleteSub(req.Context(), readSub)
 	if err != nil {

@@ -172,7 +172,4 @@ func (suite *TstHand) Test_01AddSub() {
 	suite.Require().NoError(err)
 	// должно быть 2 записи
 	suite.Require().Equal(2, len(subs))
-	// сравниваем Service_name и User_id первой записи
-	// suite.Require().Equal(sub.Service_name, subs[0].Service_name)
-	// suite.Require().Equal(sub.User_id, subs[0].User_id)
 }

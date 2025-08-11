@@ -1,4 +1,4 @@
-package main
+package integratests
 
 // Basic imports
 import (
@@ -27,9 +27,14 @@ func (suite *TS) SetupTest() {
 	suite.ctx = context.Background()
 	suite.t = time.Now()
 
-	models.MigrationsPath = "file://../../migrations"
-	err := godotenv.Load("../../.env")
-	suite.Require().NoError(err, "No .ENV file load")
+	dir, err := os.Getwd()
+	suite.Require().NoError(err, "pwd", dir)
+	models.Logger.Info("Current", "directory:", dir)
+
+	// err = godotenv.Load("./.env")
+	suite.Require().NoError(err)
+	err = godotenv.Load("../../.env")
+	suite.Require().NoError(err, "Setup Test - No .ENV file load")
 
 	cfg := config.Config{
 		DBUser:     config.GetEnv("DB_USER", "postgres"),
@@ -45,10 +50,10 @@ func (suite *TS) SetupTest() {
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
 	// PING data base check
-	err = config.CheckBase(suite.ctx, models.DSN)
-	suite.Require().NoError(err, "No DataBase connection")
-	err = config.InitMigration(suite.ctx, cfg)
-	suite.Require().NoError(err, "Миграция не прошла")
+	// err = config.CheckBase(suite.ctx, models.DSN)
+	// suite.Require().NoError(err, "No DataBase connection")
+	// err = config.InitMigration(suite.ctx, cfg)
+	// suite.Require().NoError(err, "Миграция не прошла")
 
 	// delete все записи - маска с пустой структурой models.Subscription{}
 	httpc := resty.New().SetBaseURL("http://localhost:8080")

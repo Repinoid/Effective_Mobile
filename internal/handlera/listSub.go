@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"emobile/internal/config"
-	"emobile/internal/dbase"
 	"emobile/internal/models"
 )
 
@@ -36,12 +35,12 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	offset := (page - 1) * pageSize
 
-	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	if err != nil {
-		http.Error(rwr, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer models.Inter.CloseDB()
+	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
+	// if err != nil {
+	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+	// defer models.Inter.CloseDB()
 
 	// запрос в БД на получения списка всех подписок
 	subs, err := models.Inter.ListSub(req.Context(), pageSize, offset)
@@ -51,7 +50,7 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 
 	rwr.WriteHeader(http.StatusOK)
-	
+
 	if len(subs) != 0 {
 		models.Logger.Info("Cписок", "подписки", subs)
 		json.NewEncoder(rwr).Encode(subs)

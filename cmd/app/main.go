@@ -37,21 +37,6 @@ func main() {
 	ctx := context.Background()
 
 	// уровень логирования по умолчанию Info
-	Level := slog.LevelInfo
-	// Если есть флаг -debug
-	debugFlag := flag.Bool("debug", false, "установка Минимального уровня логирования DEBUG")
-	flag.Parse()
-	if *debugFlag {
-		Level = slog.LevelDebug
-	}
-	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     Level,
-		AddSource: true, // Добавлять информацию об исходном коде
-	})
-	models.Logger = slog.New(handler)
-	slog.SetDefault(models.Logger)
-
-	models.Logger.Debug("Log", "level", Level)
 
 	if err := Run(ctx); err != nil {
 		models.Logger.Error(err.Error())
@@ -69,17 +54,26 @@ func main() {
 // @Failure 500 {string} string "Ошибка сервера"
 func Run(ctx context.Context) (err error) {
 
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+	Level := slog.LevelInfo
+	// Если есть флаг -debug
+	debugFlag := flag.Bool("debug", false, "установка Минимального уровня логирования DEBUG")
+	flag.Parse()
+	if *debugFlag {
+		Level = slog.LevelDebug
 	}
-	models.Logger.Debug("Config", "", *cfg)
+	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level:     Level,
+		AddSource: true, // Добавлять информацию об исходном коде
+	})
+	models.Logger = slog.New(handler)
+	slog.SetDefault(models.Logger)
+	models.Logger.Debug("Log", "level", Level)
 
-	err = config.InitMigration(ctx, *cfg)
+	err = config.InitMigration(ctx, config.Configuration)
 	if err != nil {
-		// для отладки, спит 900 секунд - время для входа в контейнер docker exec -it sapp sh
-		// models.Logger.Debug("sleep ...", "", *cfg)
-		// time.Sleep(900 * time.Second)
+		//для отладки, спит 900 секунд - время для входа в контейнер docker exec -it sapp sh
+		models.Logger.Info("sleep ...", "config", config.Configuration)
+		time.Sleep(900 * time.Second)
 		return
 	}
 

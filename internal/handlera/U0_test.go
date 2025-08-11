@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"emobile/internal/config"
+	"emobile/internal/dbase"
 	"emobile/internal/models"
 
 	"github.com/stretchr/testify/suite"
@@ -78,10 +79,14 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 
 	err = config.InitMigration(suite.ctx, cfg)
 	suite.Require().NoError(err)
-
+	
 	//	suite.DBEndPoint = fmt.Sprintf("postgres://testuser:testpass@%s:%s/testdb", host, port.Port())
 	suite.postgresContainer = postgresContainer
 	models.Logger.Debug("PostgreSQL", "", host, ":", port.Port())
+	
+	models.Inter, err = dbase.NewPostgresPool(context.Background(), models.DSN)
+	suite.Require().NoError(err, "can't connest to testcontainer DB")
+
 	// ***************** POSTGREs part end ************************************
 
 	models.Logger.Info("SetupTest() --")

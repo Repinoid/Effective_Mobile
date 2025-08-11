@@ -95,14 +95,14 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	if err != nil {
-		models.Logger.Error("NewPostgresPool", "", err)
-		rwr.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(rwr).Encode(err)
-		return
-	}
-	defer models.Inter.CloseDB()
+	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
+	// if err != nil {
+	// 	models.Logger.Error("NewPostgresPool", "", err)
+	// 	rwr.WriteHeader(http.StatusInternalServerError)
+	// 	json.NewEncoder(rwr).Encode(err)
+	// 	return
+	// }
+	// defer models.Inter.CloseDB()
 	
 	cTag, err := models.Inter.AddSub(req.Context(), sub)
 	if err != nil {
