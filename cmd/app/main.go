@@ -62,7 +62,7 @@ func Run(ctx context.Context) (err error) {
 		Level = slog.LevelDebug
 	}
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     Level,
+		Level:     Level, 
 		AddSource: true, // Добавлять информацию об исходном коде
 	})
 	models.Logger = slog.New(handler)
