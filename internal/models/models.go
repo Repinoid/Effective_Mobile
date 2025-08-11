@@ -28,9 +28,9 @@ type RetStruct struct {
 	Cunt int64
 }
 
-var Inter Interferon
+var Inter SubscriptionStorage
 
-type Interferon interface {
+type SubscriptionStorage interface {
 	AddSub(ctx context.Context, sub Subscription) (cTag pgconn.CommandTag, err error)
 	ListSub(ctx context.Context, pageSize, offset int) (subs []Subscription, err error)
 	ReadSub(ctx context.Context, sub Subscription) (subs []Subscription, err error)
