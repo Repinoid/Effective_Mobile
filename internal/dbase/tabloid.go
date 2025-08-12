@@ -170,6 +170,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 	// 	(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND
 	// 	(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');
 	// `
+
 	order := `
 		DELETE FROM subscriptions
 		WHERE
@@ -180,6 +181,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		AND (start_date <= $4 OR $4 = '0001-01-01 00:00:00')
 		AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date = '0001-01-01 00:00:00');
 	`
+	
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
@@ -199,45 +201,47 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	// GREATEST($3::DATE, start_date) - начало общего интервала подписка-условие, LEAST($4::DATE, end_date) - окончание
 	// разница (конец минус начало) может быть отрицательной (отрезки не пересекаются),
 	// поэтому проверка условия dv.effective_start <= dv.effective_end
+	// order := `
+	// 	WITH date_vars AS (
+	// 		SELECT id, 
+	// 		GREATEST($3::DATE, start_date) AS effective_start, 
+	// 		LEAST($4::DATE, end_date) AS effective_end,
+	// 		AGE( LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date) ) AS age_interval
+	// 		FROM subscriptions
+	// 	)
+	// 	SELECT SUM(
+	// 		s.price *
+	// 		(
+	// 			-- разница в месяцах ПЛЮС 1, т.к. учитывается не разница end-start, а все месяцы в этом интервале
+	// 			EXTRACT(YEAR FROM age_interval) * 12 +
+	// 			EXTRACT(MONTH FROM age_interval) + 1
+	// 		)
+	// 		) AS total_price
+	// 	FROM subscriptions s
+	// 	JOIN date_vars dv USING(id)
+	// 	WHERE 
+	// 	-- наименование подписки & user_id - либо пусто, либо соответствие табличному
+	// 	($1 = '' OR s.service_name = $1) AND
+	// 	($2 = '' OR s.user_id = $2::UUID) AND
+	// 	-- условие пересечения временнЫх отрезков
+	// 	dv.effective_start <= dv.effective_end ;
+	// `
 	order := `
-		WITH date_vars AS (
-			SELECT id, 
-			GREATEST($3::DATE, start_date) AS effective_start, 
-			LEAST($4::DATE, end_date) AS effective_end,
-			AGE( LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date) ) AS age_interval
+		WITH filtered_subscriptions AS (
+			SELECT id, service_name, price, start_date, end_date
 			FROM subscriptions
+			WHERE
+				($1 = '' OR service_name = $1) 
+				AND (user_id = NULLIF($2, '')::uuid OR $2 = '')
+				-- AND ($2 = '' OR user_id = $2::UUID)
+				AND GREATEST($3::DATE, start_date) <= LEAST($4::DATE, end_date)
 		)
-		SELECT SUM(
-			s.price *
-			(
-				-- разница в месяцах ПЛЮС 1, т.к. учитывается не разница end-start, а все месяцы в этом интервале
-				EXTRACT(YEAR FROM age_interval) * 12 +
-				EXTRACT(MONTH FROM age_interval) + 1
-			)
-			) AS total_price
-		FROM subscriptions s
-		JOIN date_vars dv USING(id)
-		WHERE 
-		-- наименование подписки & user_id - либо пусто, либо соответствие табличному
-		($1 = '' OR s.service_name = $1) AND
-		($2 = '' OR s.user_id = $2::UUID) AND
-		-- условие пересечения временнЫх отрезков
-		dv.effective_start <= dv.effective_end ;
+		SELECT SUM(price * (
+			EXTRACT(YEAR FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) * 12 +
+			EXTRACT(MONTH FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) + 1
+		))
+		FROM filtered_subscriptions;
 	`
-
-	// WITH filtered_subscriptions AS (
-	//     SELECT id, service_name, price, start_date, end_date
-	//     FROM subscriptions
-	//     WHERE
-	//         ($1 = '' OR service_name = $1) AND
-	//         ($2 = '' OR user_id = $2::UUID) AND
-	//         GREATEST($3::DATE, start_date) <= LEAST($4::DATE, end_date)
-	// )
-	// SELECT SUM(price * (
-	//     EXTRACT(YEAR FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) * 12 +
-	//     EXTRACT(MONTH FROM AGE(LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date))) + 1
-	// ))
-	// FROM filtered_subscriptions;
 
 	var nullsum sql.NullInt64
 	

@@ -2,7 +2,6 @@ package handlera
 
 import (
 	"emobile/internal/models"
-	"net/http"
 )
 
 type InterStruct struct {
@@ -15,15 +14,15 @@ type InterStruct struct {
 // 	return &DBstruct{Inter: Inter}
 // }
 
-type Handlers interface {
-	DBPinger(rwr http.ResponseWriter, req *http.Request)
-	CreateSub(rwr http.ResponseWriter, req *http.Request)
-	ReadSub(rwr http.ResponseWriter, req *http.Request)
-	ListSub(rwr http.ResponseWriter, req *http.Request)
-	UpdateSub(rwr http.ResponseWriter, req *http.Request)
-	DeleteSub(rwr http.ResponseWriter, req *http.Request)
-	SumSub(rwr http.ResponseWriter, req *http.Request)
-}
+// type Handlers interface {
+// 	DBPinger(rwr http.ResponseWriter, req *http.Request)
+// 	CreateSub(rwr http.ResponseWriter, req *http.Request)
+// 	ReadSub(rwr http.ResponseWriter, req *http.Request)
+// 	ListSub(rwr http.ResponseWriter, req *http.Request)
+// 	UpdateSub(rwr http.ResponseWriter, req *http.Request)
+// 	DeleteSub(rwr http.ResponseWriter, req *http.Request)
+// 	SumSub(rwr http.ResponseWriter, req *http.Request)
+// }
 
 // func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 

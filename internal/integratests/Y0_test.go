@@ -23,6 +23,7 @@ type TS struct {
 	t    time.Time
 	ctx  context.Context
 	uids [10]string
+	host string
 }
 
 func (suite *TS) SetupTest() {
@@ -51,17 +52,16 @@ func (suite *TS) SetupTest() {
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
+	suite.host = fmt.Sprintf("http://%s:%d", cfg.DBHost, cfg.DBPort)
+
 	// PING data base check
-	// err = config.CheckBase(suite.ctx, models.DSN)
-	// suite.Require().NoError(err, "No DataBase connection")
-	// err = config.InitMigration(suite.ctx, cfg)
-	// suite.Require().NoError(err, "Миграция не прошла")
+	err = config.CheckBase(suite.ctx, models.DSN)
+	suite.Require().NoError(err, "No DataBase connection")
 
 	// delete все записи - маска с пустой структурой models.Subscription{}
-	httpc := resty.New().SetBaseURL("http://localhost:8080")
+	httpc := resty.New().SetBaseURL(suite.host)
 	req := httpc.R().SetHeader("Content-Type", "application/json").SetDoNotParseResponse(false).
 		SetBody(models.Subscription{})
-	_ = req
 	// раскомментировать если надо обунулять базу перед тестами
 	_, err = req.Delete("/delete")
 	suite.Require().NoError(err, "DROP")

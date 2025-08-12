@@ -65,7 +65,7 @@ func getDir(path string) (dirac []string, err error) {
 func CheckBase(ctx context.Context, DSN string) (err error) {
 
 	poolConfig, err := pgxpool.ParseConfig(DSN)
-	//	poolConfig, err := pgxpool.ParseConfig(models.DSN)
+	
 	if err != nil {
 		models.Logger.Error("No", "ParseConfig", err)
 		return

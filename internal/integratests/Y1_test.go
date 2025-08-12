@@ -108,7 +108,3 @@ func (suite *TS) Test_01() {
 	suite.Require().JSONEq(`{"Cunt":400, "Name":"Сумма подписок"}`, resp.String())
 
 }
-
-func (suite *TS) TestExample1() {
-
-}
