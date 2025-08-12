@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"emobile/internal/config"
+	"emobile/internal/dbase"
 	"emobile/internal/handlera"
 	"emobile/internal/middlas"
 	"emobile/internal/models"
@@ -62,7 +63,7 @@ func Run(ctx context.Context) (err error) {
 		Level = slog.LevelDebug
 	}
 	handler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     Level, 
+		Level:     Level,
 		AddSource: true, // Добавлять информацию об исходном коде
 	})
 	models.Logger = slog.New(handler)
@@ -77,14 +78,23 @@ func Run(ctx context.Context) (err error) {
 		return
 	}
 
+	// a := handlera.DBstruct{}
+	db0, err := dbase.NewPostgresPool(context.Background(), models.DSN)
+	if err != nil {
+		log.Fatalln("NewPostgresPool", "fault", err)
+		return
+	}
+
+	 db := handlera.NewUserHandler(db0)
+
 	router := mux.NewRouter()
-	router.HandleFunc("/", handlera.DBPinger).Methods("GET")
-	router.HandleFunc("/add", handlera.CreateSub).Methods("POST")
-	router.HandleFunc("/read", handlera.ReadSub).Methods("POST")
-	router.HandleFunc("/list", handlera.ListSub).Methods("GET")
-	router.HandleFunc("/update", handlera.UpdateSub).Methods("PUT")
-	router.HandleFunc("/delete", handlera.DeleteSub).Methods("DELETE")
-	router.HandleFunc("/summa", handlera.SumSub).Methods("POST")
+	router.HandleFunc("/", db.DBPinger).Methods("GET")
+	router.HandleFunc("/add", db.CreateSub).Methods("POST")
+	router.HandleFunc("/read", db.ReadSub).Methods("POST")
+	router.HandleFunc("/list", db.ListSub).Methods("GET")
+	router.HandleFunc("/update", db.UpdateSub).Methods("PUT")
+	router.HandleFunc("/delete", db.DeleteSub).Methods("DELETE")
+	router.HandleFunc("/summa", db.SumSub).Methods("POST")
 
 	// подключаем middleware логирования
 	router.Use(middlas.WithHTTPLogging)

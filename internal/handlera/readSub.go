@@ -17,7 +17,7 @@ import (
 // @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /read [post]
-func ReadSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *DBstruct) ReadSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
 	readSub := models.Subscription{}
@@ -45,7 +45,7 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 	// defer models.Inter.CloseDB()
 
 	// subs []models.Subscription
-	subs, err := models.Inter.ReadSub(req.Context(), readSub)
+	subs, err := db.Inter.ReadSub(req.Context(), readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
@@ -78,7 +78,7 @@ func ReadSub(rwr http.ResponseWriter, req *http.Request) {
 // @Failure 400 {object} object "Неверный запрос"
 // @Failure 500 {object} object "Ошибка сервера"
 // @Router /update [put]
-func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *DBstruct) UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
 
@@ -109,7 +109,7 @@ func UpdateSub(rwr http.ResponseWriter, req *http.Request) {
 	// }
 	// defer models.Inter.CloseDB()
 
-	cTag, err := models.Inter.UpdateSub(req.Context(), readSub)
+	cTag, err := db.Inter.UpdateSub(req.Context(), readSub)
 	if err != nil {
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)

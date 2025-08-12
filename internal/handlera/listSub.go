@@ -17,7 +17,7 @@ import (
 // @Success 200 {array} models.Subscription
 // @Failure 500 {object} object "Ошибка сервера"
 // @Router /list [get]
-func ListSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *DBstruct) ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	// Получение параметров страницы
 	pageStr := req.URL.Query().Get("page")
@@ -43,7 +43,7 @@ func ListSub(rwr http.ResponseWriter, req *http.Request) {
 	// defer models.Inter.CloseDB()
 
 	// запрос в БД на получения списка всех подписок
-	subs, err := models.Inter.ListSub(req.Context(), pageSize, offset)
+	subs, err := db.Inter.ListSub(req.Context(), pageSize, offset)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return

@@ -13,14 +13,16 @@ import (
 	"time"
 
 	"github.com/go-resty/resty/v2"
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
 )
 
 type TS struct {
 	suite.Suite
-	t   time.Time
-	ctx context.Context
+	t    time.Time
+	ctx  context.Context
+	uids [10]string
 }
 
 func (suite *TS) SetupTest() {
@@ -63,6 +65,10 @@ func (suite *TS) SetupTest() {
 	// раскомментировать если надо обунулять базу перед тестами
 	_, err = req.Delete("/delete")
 	suite.Require().NoError(err, "DROP")
+
+	for i := range suite.uids {
+		suite.uids[i] = uuid.NewString()
+	}
 
 }
 

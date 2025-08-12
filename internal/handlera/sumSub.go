@@ -17,7 +17,7 @@ import (
 // @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /summa [post]
-func SumSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *DBstruct) SumSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
 
@@ -27,7 +27,6 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 		http.Error(rwr, err.Error(), http.StatusBadRequest)
 		return
 	}
-
 
 	if (readSub.Service_name == "" && readSub.User_id == "") ||
 		readSub.End_date == nil || readSub.Start_date == nil {
@@ -42,7 +41,7 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 	// }
 	// defer models.Inter.CloseDB()
 
-	summa, err := models.Inter.SumSub(req.Context(), readSub)
+	summa, err := db.Inter.SumSub(req.Context(), readSub)
 	if err != nil && err != sql.ErrNoRows {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
@@ -73,7 +72,7 @@ func SumSub(rwr http.ResponseWriter, req *http.Request) {
 // @Failure 400 {object} string "Неверный формат запроса"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /delete [delete]
-func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *DBstruct) DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
 
@@ -91,7 +90,7 @@ func DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 	// }
 	// defer models.Inter.CloseDB()
 
-	cTag, err := models.Inter.DeleteSub(req.Context(), readSub)
+	cTag, err := db.Inter.DeleteSub(req.Context(), readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return

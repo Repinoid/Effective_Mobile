@@ -21,7 +21,7 @@ type TstHand struct {
 	suite.Suite
 	t   time.Time
 	ctx context.Context
-	//	dataBase          *dbase.DBstruct
+	db  *DBstruct
 	//	DBEndPoint        string
 	postgresContainer testcontainers.Container
 }
@@ -34,7 +34,7 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	//MigrationsPath = "file://migrations"
 	models.MigrationsPath = "file://../../migrations"
 	//err := godotenv.Load(models.EnvPath)
-	models.EnvPath = "../../.env"
+	//models.EnvPath = "../../.env"
 
 	// ***************** POSTGREs part begin ************************************
 	// Запуск контейнера PostgreSQL
@@ -79,13 +79,16 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 
 	err = config.InitMigration(suite.ctx, cfg)
 	suite.Require().NoError(err)
-	
+
 	//	suite.DBEndPoint = fmt.Sprintf("postgres://testuser:testpass@%s:%s/testdb", host, port.Port())
 	suite.postgresContainer = postgresContainer
 	models.Logger.Debug("PostgreSQL", "", host, ":", port.Port())
-	
-	models.Inter, err = dbase.NewPostgresPool(context.Background(), models.DSN)
-	suite.Require().NoError(err, "can't connest to testcontainer DB")
+
+	db0, err := dbase.NewPostgresPool(context.Background(), models.DSN)
+
+	suite.db = NewUserHandler(db0)
+	suite.Require().NoError(err)
+
 
 	// ***************** POSTGREs part end ************************************
 

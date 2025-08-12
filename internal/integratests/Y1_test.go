@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/google/uuid"
 )
 
 var sub = models.Subscription{
@@ -20,7 +19,7 @@ var sub = models.Subscription{
 func (suite *TS) Test_01() {
 
 	// создаём случайны User_id чтобы не было конфликтов
-	ui := uuid.NewString()
+	ui := suite.uids[0]
 	sub1 := sub
 	sub1.User_id = ui
 

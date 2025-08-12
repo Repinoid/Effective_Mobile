@@ -138,7 +138,7 @@ func (suite *TstHand) Test_01AddSub() {
 			// Создание ResponseRecorder
 			response := httptest.NewRecorder()
 			// вызов хандлера
-			CreateSub(response, request)
+			suite.db.CreateSub(response, request)
 
 			res := response.Result()
 			defer res.Body.Close()
@@ -156,7 +156,7 @@ func (suite *TstHand) Test_01AddSub() {
 	// Создание ResponseRecorder
 	response := httptest.NewRecorder()
 	// вызов хандлера
-	ListSub(response, request)
+	suite.db.ListSub(response, request)
 
 	res := response.Result()
 	defer res.Body.Close()

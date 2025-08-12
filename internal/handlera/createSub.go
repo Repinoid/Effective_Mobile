@@ -20,7 +20,9 @@ import (
 // @Success 200 {object} map[string]string "Database is reachable"
 // @Failure 500 {object} map[string]string "Database connection error"
 // @Router / [get]
-func DBPinger(rwr http.ResponseWriter, req *http.Request) {
+func (db *DBstruct)   DBPinger(rwr http.ResponseWriter, req *http.Request) {
+
+	
 
 	err := dbase.Ping(req.Context())
 	if err != nil {
@@ -42,7 +44,7 @@ func DBPinger(rwr http.ResponseWriter, req *http.Request) {
 // @Failure 400 {object} object "Validation error"
 // @Failure 500 {object} object "Internal server error"
 // @Router /add [post]
-func CreateSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *DBstruct) CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
 	sub := models.Subscription{}
@@ -103,13 +105,18 @@ func CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	// 	return
 	// }
 	// defer models.Inter.CloseDB()
+
 	
-	cTag, err := models.Inter.AddSub(req.Context(), sub)
+	// db.Inter.AddSub()
+
+	cTag, err := db.Inter.AddSub(req.Context(), sub)
+	//cTag, err := models.Inter.AddSub(req.Context(), sub)
+	// cTag, err := models.Inter.AddSub(req.Context(), sub)
 	if err != nil {
 		models.Logger.Error("AddSub table method", "", err)
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
-		return
+		return 
 	}
 	
 	ret := models.RetStruct{
