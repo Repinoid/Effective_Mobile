@@ -72,20 +72,25 @@ func Run(ctx context.Context) (err error) {
 
 	err = config.InitMigration(ctx, config.Configuration)
 	if err != nil {
-		//для отладки, спит 900 секунд - время для входа в контейнер docker exec -it sapp sh
+		//для отладки, спит 900 секунд - время для инспекции контейнера приложения, docker exec -it sapp sh
 		models.Logger.Info("sleep ...", "config", config.Configuration)
 		time.Sleep(900 * time.Second)
 		return
 	}
 
-	// a := handlera.DBstruct{}
-	db0, err := dbase.NewPostgresPool(context.Background(), models.DSN)
+	postgres, err := dbase.NewPostgresPool(context.Background(), models.DSN)
 	if err != nil {
 		log.Fatalln("NewPostgresPool", "fault", err)
 		return
 	}
 
-	 db := handlera.NewUserHandler(db0)
+	// func NewUserHandler(Inter models.SubscriptionStorage) *DBstruct {
+	// 	return &DBstruct{Inter: Inter}
+	// }
+
+	// db := handlera.NewUserHandler(postgres)
+
+	db := &handlera.InterStruct{Inter: postgres}
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", db.DBPinger).Methods("GET")

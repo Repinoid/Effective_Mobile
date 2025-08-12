@@ -20,9 +20,7 @@ import (
 // @Success 200 {object} map[string]string "Database is reachable"
 // @Failure 500 {object} map[string]string "Database connection error"
 // @Router / [get]
-func (db *DBstruct)   DBPinger(rwr http.ResponseWriter, req *http.Request) {
-
-	
+func (db *InterStruct) DBPinger(rwr http.ResponseWriter, req *http.Request) {
 
 	err := dbase.Ping(req.Context())
 	if err != nil {
@@ -44,7 +42,7 @@ func (db *DBstruct)   DBPinger(rwr http.ResponseWriter, req *http.Request) {
 // @Failure 400 {object} object "Validation error"
 // @Failure 500 {object} object "Internal server error"
 // @Router /add [post]
-func (db *DBstruct) CreateSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
 	sub := models.Subscription{}
@@ -90,7 +88,7 @@ func (db *DBstruct) CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	}
 	// если при непустой конечной дате она раньше начальной
 	// json.NewDecoder(req.Body).Decode(&sub) размаршаллил и в sub.*_date дата в формате time.Time
-	if !sub.End_date.(time.Time).IsZero()  && sub.End_date.(time.Time).Before(sub.Start_date.(time.Time)) {
+	if !sub.End_date.(time.Time).IsZero() && sub.End_date.(time.Time).Before(sub.Start_date.(time.Time)) {
 		models.Logger.Error("end date before start")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("end date before start"))
@@ -106,7 +104,6 @@ func (db *DBstruct) CreateSub(rwr http.ResponseWriter, req *http.Request) {
 	// }
 	// defer models.Inter.CloseDB()
 
-	
 	// db.Inter.AddSub()
 
 	cTag, err := db.Inter.AddSub(req.Context(), sub)
@@ -116,14 +113,14 @@ func (db *DBstruct) CreateSub(rwr http.ResponseWriter, req *http.Request) {
 		models.Logger.Error("AddSub table method", "", err)
 		rwr.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(rwr).Encode(err)
-		return 
+		return
 	}
-	
+
 	ret := models.RetStruct{
 		Name: "Внесено записей",
 		Cunt: cTag.RowsAffected(),
 	}
-	
+
 	models.Logger.Info("Подписка успешно создана", "", sub)
 
 	rwr.WriteHeader(http.StatusOK)

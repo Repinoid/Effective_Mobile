@@ -17,7 +17,7 @@ import (
 // @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /summa [post]
-func (db *DBstruct) SumSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) SumSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
 
@@ -72,7 +72,7 @@ func (db *DBstruct) SumSub(rwr http.ResponseWriter, req *http.Request) {
 // @Failure 400 {object} string "Неверный формат запроса"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /delete [delete]
-func (db *DBstruct) DeleteSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) DeleteSub(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
 

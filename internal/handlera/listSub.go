@@ -17,7 +17,7 @@ import (
 // @Success 200 {array} models.Subscription
 // @Failure 500 {object} object "Ошибка сервера"
 // @Router /list [get]
-func (db *DBstruct) ListSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) ListSub(rwr http.ResponseWriter, req *http.Request) {
 
 	// Получение параметров страницы
 	pageStr := req.URL.Query().Get("page")

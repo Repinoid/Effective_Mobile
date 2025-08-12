@@ -21,7 +21,7 @@ type TstHand struct {
 	suite.Suite
 	t   time.Time
 	ctx context.Context
-	db  *DBstruct
+	db  *InterStruct
 	//	DBEndPoint        string
 	postgresContainer testcontainers.Container
 }
@@ -86,9 +86,9 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 
 	db0, err := dbase.NewPostgresPool(context.Background(), models.DSN)
 
-	suite.db = NewUserHandler(db0)
+	// suite.db = NewUserHandler(db0)
+	suite.db = &InterStruct{Inter: db0}
 	suite.Require().NoError(err)
-
 
 	// ***************** POSTGREs part end ************************************
 

@@ -5,15 +5,15 @@ import (
 	"net/http"
 )
 
-type DBstruct struct {
+type InterStruct struct {
 	Inter models.SubscriptionStorage
 	//DB    *pgxpool.Pool
 	//	DB *pgx.Conn
 }
 
-func NewUserHandler(Inter models.SubscriptionStorage) *DBstruct {
-	return &DBstruct{Inter: Inter}
-}
+// func NewUserHandler(Inter models.SubscriptionStorage) *DBstruct {
+// 	return &DBstruct{Inter: Inter}
+// }
 
 type Handlers interface {
 	DBPinger(rwr http.ResponseWriter, req *http.Request)
