@@ -83,20 +83,11 @@ func (db *InterStruct) DeleteHandler(rwr http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	// if err != nil {
-	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer models.Inter.CloseDB()
-
 	cTag, err := db.Inter.DeleteSub(req.Context(), readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	rwr.WriteHeader(http.StatusOK)
 
 	ret := models.RetStruct{
 		Name: "Удалено записей",
@@ -104,10 +95,13 @@ func (db *InterStruct) DeleteHandler(rwr http.ResponseWriter, req *http.Request)
 	}
 
 	if cTag.RowsAffected() == 0 {
+		rwr.WriteHeader(http.StatusNoContent)
+		models.Logger.Info("Не найдено записей на удаление, удовлетворяющих запросу", "", ret)
 		ret.Name = "Не найдено записей на удаление, удовлетворяющих запросу"
+	} else {
+		rwr.WriteHeader(http.StatusOK)
+		models.Logger.Info("DELETE", "OK", ret)
 	}
-
-	models.Logger.Info("DELETE ", "", ret)
 
 	json.NewEncoder(rwr).Encode(ret)
 }

@@ -142,24 +142,14 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 
 func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
-	// order := `
-	// 	DELETE FROM subscriptions WHERE 
-	// 	($1 = '' OR service_name = $1) AND 
-	// 	( ($2::int = 0) OR (price = $2::int) ) AND
-	// 	($3 = '' OR user_id = $3::uuid) AND
-	// 	(start_date <= $4 OR $4 = '0001-01-01 00:00:00') AND
-	// 	(end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date ='0001-01-01 00:00:00');
-	// `
-
 	order := `
 		DELETE FROM subscriptions
 		WHERE
 		(service_name = $1 OR $1 = '')
 		AND (price = $2 OR $2::int = 0)
 		AND (user_id = NULLIF($3, '')::uuid OR $3 = '')
-		-- AND ($3 = '' OR user_id = $3::uuid)
 		AND (start_date <= $4 OR $4 = '0001-01-01 00:00:00')
-		AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date = '0001-01-01 00:00:00');
+		AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' );
 	`
 	
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
