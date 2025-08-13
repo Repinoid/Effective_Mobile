@@ -24,8 +24,6 @@ type Subscription struct {
 	End_date     string `json:"end_date"`     // “start_date”: “07-2025”
 	Sdt          time.Time
 	Edt          time.Time
-	// Start_date   any    `json:"start_date"`   // “start_date”: “07-2025”
-	// End_date     any    `json:"end_date"`     // “start_date”: “07-2025”
 }
 
 type RetStruct struct {

@@ -12,8 +12,8 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 	// Создаем временный тип, чтобы избежать рекурсии при Unmarshal
 	type Alias Subscription
 	temp := &struct {
-		StartDate string `json:"start_date"`
-		EndDate   string `json:"end_date"`
+		// StartDate string `json:"start_date"`
+		// EndDate   string `json:"end_date"`
 		*Alias
 	}{
 		Alias: (*Alias)(sub),
@@ -23,11 +23,13 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 		return err
 	}
 	// дата из строки - в time.Time
-	sub.Sdt, err = ParseDate(temp.StartDate)
+	sub.Sdt, err = ParseDate(temp.Start_date)
+	// sub.Sdt, err = ParseDate(temp.StartDate)
 	if err != nil {
 		return err
 	}
-	sub.Edt, err = ParseDate(temp.EndDate)
+	sub.Edt, err = ParseDate(temp.End_date)
+	// sub.Edt, err = ParseDate(temp.EndDate)
 	if err != nil {
 		return err
 	}
