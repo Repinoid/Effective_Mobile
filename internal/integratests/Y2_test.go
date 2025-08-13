@@ -16,11 +16,18 @@ func (suite *TS) Test_02() {
 		noErr  bool
 	}{
 		{
-			name:   "Drop",
+			name:   "Drop table",
 			hand:   "/delete",
 			sub:    models.Subscription{},
 			noErr:  true,
 			status: http.StatusOK,
+		},
+		{
+			name:   "List empty table",
+			hand:   "/list",
+			// sub:    models.Subscription{},
+			noErr:  true,
+			status: http.StatusNoContent,
 		},
 	}
 	for _, tt := range tests {
@@ -34,6 +41,11 @@ func (suite *TS) Test_02() {
 			switch tt.hand {
 			case "/delete":
 				resp, err = req.Delete("/delete")
+			case "/list":
+				resp, err = req.Get("/list")
+
+			default:
+				return
 			}
 
 			if tt.noErr {

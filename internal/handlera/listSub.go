@@ -17,7 +17,7 @@ import (
 // @Success 200 {array} models.Subscription
 // @Failure 500 {object} object "Ошибка сервера"
 // @Router /list [get]
-func (db *InterStruct) ListSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) ListHandler(rwr http.ResponseWriter, req *http.Request) {
 
 	// Получение параметров страницы
 	pageStr := req.URL.Query().Get("page")
@@ -48,14 +48,15 @@ func (db *InterStruct) ListSub(rwr http.ResponseWriter, req *http.Request) {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	rwr.WriteHeader(http.StatusOK)
-
+	
 	if len(subs) != 0 {
+		rwr.WriteHeader(http.StatusOK)
 		models.Logger.Info("Cписок", "подписки", subs)
 		json.NewEncoder(rwr).Encode(subs)
 		return
 	}
+
+	rwr.WriteHeader(http.StatusNoContent)
 	models.Logger.Info("Нет записей в подписках")
 
 	ret := models.RetStruct{

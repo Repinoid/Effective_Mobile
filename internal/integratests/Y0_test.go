@@ -45,14 +45,14 @@ func (suite *TS) SetupTest() {
 		DBName:     config.GetEnv("DB_NAME", "postgres"),
 		DBHost:     "localhost",
 		DBPort:     5432,
-		// AppPort:    8080,
-		// AppHost:    "localhost",
+		AppPort:    8080,
+		AppHost:    "localhost",
 	}
 
 	models.DSN = fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
-	suite.host = fmt.Sprintf("http://%s:%d", cfg.DBHost, cfg.DBPort)
+	suite.host = fmt.Sprintf("http://%s:%d", cfg.AppHost, cfg.AppPort)
 
 	// PING data base check
 	err = config.CheckBase(suite.ctx, models.DSN)

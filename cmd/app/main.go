@@ -94,12 +94,12 @@ func Run(ctx context.Context) (err error) {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/", db.DBPinger).Methods("GET")
-	router.HandleFunc("/add", db.CreateSub).Methods("POST")
-	router.HandleFunc("/read", db.ReadSub).Methods("POST")
-	router.HandleFunc("/list", db.ListSub).Methods("GET")
-	router.HandleFunc("/update", db.UpdateSub).Methods("PUT")
-	router.HandleFunc("/delete", db.DeleteSub).Methods("DELETE")
-	router.HandleFunc("/summa", db.SumSub).Methods("POST")
+	router.HandleFunc("/add", db.CreateHandler).Methods("POST")
+	router.HandleFunc("/read", db.ReadHandler).Methods("POST")
+	router.HandleFunc("/list", db.ListHandler).Methods("GET")
+	router.HandleFunc("/update", db.UpdateHandler).Methods("PUT")
+	router.HandleFunc("/delete", db.DeleteHandler).Methods("DELETE")
+	router.HandleFunc("/summa", db.SumHandler).Methods("POST")
 
 	// подключаем middleware логирования
 	router.Use(middlas.WithHTTPLogging)

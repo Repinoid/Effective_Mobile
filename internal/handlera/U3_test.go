@@ -30,7 +30,7 @@ func (suite *TstHand) Test_03UpdateSub() {
 	// Создание ResponseRecorder
 	response := httptest.NewRecorder()
 	// вызов хандлера
-	suite.db.UpdateSub(response, request)
+	suite.db.UpdateHandler(response, request)
 
 	res := response.Result()
 	defer res.Body.Close()
@@ -58,7 +58,7 @@ func (suite *TstHand) Test_03UpdateSub() {
 	// Создание ResponseRecorder
 	response = httptest.NewRecorder()
 	// вызов хандлера
-	suite.db.ReadSub(response, request)
+	suite.db.ReadHandler(response, request)
 
 	res = response.Result()
 	defer res.Body.Close()
@@ -104,7 +104,7 @@ func (suite *TstHand) Test_04SetSumma() {
 	// Создание ResponseRecorder
 	response := httptest.NewRecorder()
 	// вызов хандлера
-	suite.db.UpdateSub(response, request)
+	suite.db.UpdateHandler(response, request)
 
 	res := response.Result()
 	defer res.Body.Close()
@@ -128,7 +128,7 @@ func (suite *TstHand) Test_05DeleteAllSubs() {
 	// Создание ResponseRecorder
 	response := httptest.NewRecorder()
 	// вызов хандлера
-	suite.db.DeleteSub(response, request)
+	suite.db.DeleteHandler(response, request)
 
 	res := response.Result()
 	defer res.Body.Close()

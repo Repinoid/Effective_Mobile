@@ -42,7 +42,7 @@ func (db *InterStruct) DBPinger(rwr http.ResponseWriter, req *http.Request) {
 // @Failure 400 {object} object "Validation error"
 // @Failure 500 {object} object "Internal server error"
 // @Router /add [post]
-func (db *InterStruct) CreateSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) CreateHandler(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
 	sub := models.Subscription{}

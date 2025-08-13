@@ -106,7 +106,7 @@ func (suite *TstHand) Test_02ReadSub() {
 			// Создание ResponseRecorder
 			response := httptest.NewRecorder()
 			// вызов хандлера
-			suite.db.ReadSub(response, request)
+			suite.db.ReadHandler(response, request)
 
 			res := response.Result()
 			defer res.Body.Close()

@@ -17,7 +17,7 @@ import (
 // @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /read [post]
-func (db *InterStruct) ReadSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) ReadHandler(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
 
 	readSub := models.Subscription{}
@@ -78,7 +78,7 @@ func (db *InterStruct) ReadSub(rwr http.ResponseWriter, req *http.Request) {
 // @Failure 400 {object} object "Неверный запрос"
 // @Failure 500 {object} object "Ошибка сервера"
 // @Router /update [put]
-func (db *InterStruct) UpdateSub(rwr http.ResponseWriter, req *http.Request) {
+func (db *InterStruct) UpdateHandler(rwr http.ResponseWriter, req *http.Request) {
 
 	rwr.Header().Set("Content-Type", "application/json")
 
