@@ -39,7 +39,7 @@ func (suite *TstHand) Test_01AddSubFunc() {
 
 	// структура "плоская", без указателей, поэтому копия независимая
 	sub1 := subG
-	sub1.End_date = time.Time{}
+	sub1.Edt = time.Time{}
 	sub1.Price = 0
 	MakeTT(&sub1)
 

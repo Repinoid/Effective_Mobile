@@ -33,11 +33,11 @@ func (suite *TstHand) SetupSuite() { // выполняется перед тес
 	if os.Getenv("DEBUG") == "true" ||
 		os.Getenv("DLV_DEBUG") == "1" ||
 		os.Getenv("VSCODE_DEBUG") == "true" {
-			models.MigrationsPath = "file://migrations"
-			models.EnvPath = ".env"
+		models.MigrationsPath = "file://migrations"
+		models.EnvPath = ".env"
 	} else {
 		models.MigrationsPath = "file://../../migrations"
-		
+
 		models.EnvPath = "../../.env"
 	}
 
@@ -123,17 +123,12 @@ func TestHandlersSuite(t *testing.T) {
 // MakeTT используется в функциях тестов, преобразует поля со строковыми датами в time.Time
 func MakeTT(sub *models.Subscription) (err error) {
 
-	switch sub.Start_date.(type) {
-	case string:
-		sub.Start_date, _ = models.ParseDate(sub.Start_date.(string))
+	sub.Sdt, err = models.ParseDate(sub.Start_date)
+	if err != nil {
+		return
 	}
-	switch sub.End_date.(type) {
-	case string:
-		sub.End_date, _ = models.ParseDate(sub.End_date.(string))
-	}
+	sub.Edt, err = models.ParseDate(sub.End_date)
 	return
 }
-
-
 
 // docker exec -it pcont psql -U testuser -d testdb

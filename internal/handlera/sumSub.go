@@ -29,7 +29,7 @@ func (db *InterStruct) SumHandler(rwr http.ResponseWriter, req *http.Request) {
 	}
 
 	if (readSub.Service_name == "" && readSub.User_id == "") ||
-		readSub.End_date == nil || readSub.Start_date == nil {
+		readSub.Edt.IsZero() || readSub.Sdt.IsZero() {
 		http.Error(rwr, "не все данные указаны", http.StatusBadRequest)
 		return
 	}

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"emobile/internal/dbase"
 	"emobile/internal/models"
@@ -80,15 +79,14 @@ func (db *InterStruct) CreateHandler(rwr http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	if sub.Start_date.(time.Time).IsZero() {
+	if sub.Sdt.IsZero() {
 		models.Logger.Error("no start date")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no start date"))
 		return
 	}
 	// если при непустой конечной дате она раньше начальной
-	// json.NewDecoder(req.Body).Decode(&sub) размаршаллил и в sub.*_date дата в формате time.Time
-	if !sub.End_date.(time.Time).IsZero() && sub.End_date.(time.Time).Before(sub.Start_date.(time.Time)) {
+	if !sub.Edt.IsZero() && sub.Edt.Before(sub.Sdt) {
 		models.Logger.Error("end date before start")
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("end date before start"))

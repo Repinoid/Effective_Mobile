@@ -23,11 +23,11 @@ func (sub *Subscription) UnmarshalJSON(data []byte) (err error) {
 		return err
 	}
 	// дата из строки - в time.Time
-	sub.Start_date, err = ParseDate(temp.StartDate)
+	sub.Sdt, err = ParseDate(temp.StartDate)
 	if err != nil {
 		return err
 	}
-	sub.End_date, err = ParseDate(temp.EndDate)
+	sub.Edt, err = ParseDate(temp.EndDate)
 	if err != nil {
 		return err
 	}
@@ -63,4 +63,3 @@ func ParseDate(date string) (time.Time, error) {
 
 	return time.Time{}, errors.New("неверный формат даты")
 }
-

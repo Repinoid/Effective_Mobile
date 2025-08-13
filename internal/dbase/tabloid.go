@@ -63,7 +63,7 @@ func Ping(ctx context.Context) error {
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 
 	return
 }
@@ -79,7 +79,7 @@ func (dataBase *DBstruct) ListSub(ctx context.Context, pageSize, offset int) (su
 
 	for rows.Next() {
 		sub := models.Subscription{}
-		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sub.Start_date, &sub.End_date); err != nil {
+		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sub.Sdt, &sub.Edt); err != nil {
 			return nil, err
 		}
 		subs = append(subs, sub)
@@ -114,7 +114,7 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 	// 	OR end_date = '0001-01-01 00:00:00'
 	// );
 
-	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
+	rows, err := dataBase.DB.Query(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +126,8 @@ func (dataBase *DBstruct) ReadSub(ctx context.Context, sub models.Subscription) 
 		if err := rows.Scan(&sub.Service_name, &sub.Price, &sub.User_id, &sdt, &edt); err != nil {
 			return nil, err
 		}
-		sub.Start_date = sdt.Time
-		sub.End_date = edt.Time
+		sub.Sdt = sdt.Time
+		sub.Edt = edt.Time
 		subs = append(subs, sub)
 	}
 
@@ -155,7 +155,7 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 	// 	service_name = $4
 	// 	AND user_id = $5::uuid;
 
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Start_date, sub.End_date, sub.Service_name, sub.User_id)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Sdt, sub.Edt, sub.Service_name, sub.User_id)
 
 	return
 }
@@ -182,7 +182,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' OR end_date = '0001-01-01 00:00:00');
 	`
 	
-	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Start_date, sub.End_date)
+	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
 	}
@@ -194,8 +194,8 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 
 	//  если конечная дата подписки не задана - устанавлiваем в максимально возможное значение
 	//  			Жаль только — жить в эту пору прекрасную уж не придется — ни мне, ни тебе ©
-	if sub.End_date == nil {
-		sub.End_date = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
+	if sub.Edt.IsZero() {
+		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
 
 	// GREATEST($3::DATE, start_date) - начало общего интервала подписка-условие, LEAST($4::DATE, end_date) - окончание
@@ -245,7 +245,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 
 	var nullsum sql.NullInt64
 	
-	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Start_date, sub.End_date)
+	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
 
 	err = row.Scan(&nullsum)
 	if err != nil {
