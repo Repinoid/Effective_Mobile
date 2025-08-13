@@ -51,7 +51,7 @@ func (db *InterStruct) ReadHandler(rwr http.ResponseWriter, req *http.Request) {
 	}
 
 	rwr.WriteHeader(http.StatusNoContent)
-	
+
 	models.Logger.Info("Read - Не найдено записей")
 	ret := models.RetStruct{
 		Name: "Не найдено записей, удовлетворяющих запросу",
@@ -82,7 +82,7 @@ func (db *InterStruct) UpdateHandler(rwr http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	// в запросе read обязятельныц поля Service_name и User_id
+	// в запросе Update обязятельныц поля Service_name и User_id
 	if readSub.Service_name == "" {
 		rwr.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(rwr).Encode(errors.New("no service name"))
@@ -93,14 +93,6 @@ func (db *InterStruct) UpdateHandler(rwr http.ResponseWriter, req *http.Request)
 		json.NewEncoder(rwr).Encode(errors.New("no user_id"))
 		return
 	}
-
-	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	// if err != nil {
-	// 	rwr.WriteHeader(http.StatusInternalServerError)
-	// 	json.NewEncoder(rwr).Encode(err)
-	// 	return
-	// }
-	// defer models.Inter.CloseDB()
 
 	cTag, err := db.Inter.UpdateSub(req.Context(), readSub)
 	if err != nil {
@@ -115,10 +107,12 @@ func (db *InterStruct) UpdateHandler(rwr http.ResponseWriter, req *http.Request)
 	}
 	if cTag.RowsAffected() == 0 {
 		ret.Name = "Не найдено записей, удовлетворяющих запросу"
+		rwr.WriteHeader(http.StatusNoContent)
+		models.Logger.Info(ret.Name)
+	} else {
+		rwr.WriteHeader(http.StatusOK)
+		models.Logger.Info("UPDATE", "", ret)
 	}
 
-	models.Logger.Info("UPDATE", "", ret)
-
-	rwr.WriteHeader(http.StatusOK)
 	json.NewEncoder(rwr).Encode(ret)
 }

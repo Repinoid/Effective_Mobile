@@ -135,15 +135,6 @@ func (dataBase *DBstruct) UpdateSub(ctx context.Context, sub models.Subscription
 		WHERE service_name=$4 AND user_id=$5::uuid;
 	`
 
-	// UPDATE subscriptions
-	// SET
-	// 	price = COALESCE(NULLIF($1, 0), price),
-	// 	start_date = $2,
-	// 	end_date = $3
-	// WHERE
-	// 	service_name = $4
-	// 	AND user_id = $5::uuid;
-
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Price, sub.Sdt, sub.Edt, sub.Service_name, sub.User_id)
 
 	return
