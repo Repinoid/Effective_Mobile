@@ -33,7 +33,6 @@ func (suite *TstHand) Test_02ReadSub() {
 		sub     models.Subscription
 		status  int
 		records int
-		reply   string
 	}{
 		{
 			name: "start date less than recorded",
@@ -42,15 +41,13 @@ func (suite *TstHand) Test_02ReadSub() {
 				s.Start_date = "01-25"
 				return s
 			}(),
-			status:  http.StatusOK,
-			reply:   `{"status":"OK"}`,
+			status:  http.StatusNoContent,
 			records: 0,
 		},
 		{
 			name:    "Normaldu",
 			sub:     sub,
 			status:  http.StatusOK,
-			reply:   `{"status":"OK"}`,
 			records: 1,
 		},
 		{
@@ -61,7 +58,6 @@ func (suite *TstHand) Test_02ReadSub() {
 				return s
 			}(),
 			status:  http.StatusOK,
-			reply:   `{"status":"OK"}`,
 			records: 1,
 		},
 		{
@@ -72,7 +68,6 @@ func (suite *TstHand) Test_02ReadSub() {
 				return s
 			}(),
 			status:  http.StatusOK,
-			reply:   `{"status":"OK"}`,
 			records: 1,
 		},
 		{
@@ -82,8 +77,7 @@ func (suite *TstHand) Test_02ReadSub() {
 				s.End_date = "01-35"
 				return s
 			}(),
-			status:  http.StatusOK,
-			reply:   `{"status":"OK"}`,
+			status:  http.StatusNoContent,
 			records: 0,
 		},
 	}

@@ -27,38 +27,31 @@ func (db *InterStruct) ReadHandler(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// в запросе read обязятельныц поля Service_name и User_id
-	if readSub.Service_name == "" {
-		http.Error(rwr, "no service name", http.StatusBadRequest)
-		return
-	}
-	if readSub.User_id == "" {
-		http.Error(rwr, "no user_id", http.StatusBadRequest)
-		return
-	}
-
-	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	// if err != nil {
-	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
+	// // в запросе read обязятельныц поля Service_name и User_id
+	// if readSub.Service_name == "" {
+	// 	http.Error(rwr, "no service name", http.StatusBadRequest)
 	// 	return
 	// }
-	// defer models.Inter.CloseDB()
+	// if readSub.User_id == "" {
+	// 	http.Error(rwr, "no user_id", http.StatusBadRequest)
+	// 	return
+	// }
 
-	// subs []models.Subscription
 	subs, err := db.Inter.ReadSub(req.Context(), readSub)
 	if err != nil {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	rwr.WriteHeader(http.StatusOK)
-
 	if len(subs) != 0 {
+		rwr.WriteHeader(http.StatusOK)
 		models.Logger.Info("Найдено", "подписок", len(subs))
 		json.NewEncoder(rwr).Encode(subs)
 		return
 	}
 
+	rwr.WriteHeader(http.StatusNoContent)
+	
 	models.Logger.Info("Read - Не найдено записей")
 	ret := models.RetStruct{
 		Name: "Не найдено записей, удовлетворяющих запросу",
