@@ -33,7 +33,7 @@ type RetStruct struct {
 	Cunt int64
 }
 
-var Inter SubscriptionStorage
+// var Inter SubscriptionStorage
 
 type SubscriptionStorage interface {
 	AddSub(ctx context.Context, sub Subscription) (cTag pgconn.CommandTag, err error)
