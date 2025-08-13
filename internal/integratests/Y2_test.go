@@ -2,6 +2,7 @@ package integratests
 
 import (
 	"emobile/internal/models"
+	"encoding/json"
 	"net/http"
 
 	"github.com/go-resty/resty/v2"
@@ -14,6 +15,7 @@ func (suite *TS) Test_02() {
 		sub    models.Subscription
 		status int
 		noErr  bool
+		summ   int64
 	}{
 		{
 			name:   "Drop table",
@@ -23,11 +25,44 @@ func (suite *TS) Test_02() {
 			status: http.StatusOK,
 		},
 		{
-			name:   "List empty table",
-			hand:   "/list",
+			name: "List empty table",
+			hand: "/list",
 			// sub:    models.Subscription{},
 			noErr:  true,
 			status: http.StatusNoContent,
+		},
+		{
+			name: "Add OK record",
+			hand: "/add",
+			sub: models.Subscription{
+				Service_name: "Yandex Plus",
+				Price:        400,
+				User_id:      suite.uids[0],
+				Start_date:   "02-2025",
+				End_date:     "11-2025",
+			},
+			noErr:  true,
+			status: http.StatusOK,
+		},
+		{
+			name:   "List table with 1 record",
+			hand:   "/list",
+			noErr:  true,
+			status: http.StatusOK,
+		},
+		{
+			name: "Get summ for 2 months",
+			hand: "/summa",
+			sub: models.Subscription{
+				Service_name: "Yandex Plus",
+				Price:        400,
+				User_id:      suite.uids[0],
+				Start_date:   "10-2025",
+				End_date:     "11-2025",
+			},
+			noErr:  true,
+			status: http.StatusOK,
+			summ:   800,
 		},
 	}
 	for _, tt := range tests {
@@ -39,10 +74,25 @@ func (suite *TS) Test_02() {
 				SetBody(tt.sub)
 
 			switch tt.hand {
+
 			case "/delete":
-				resp, err = req.Delete("/delete")
+				resp, err = req.Delete(tt.hand)
+
 			case "/list":
-				resp, err = req.Get("/list")
+				resp, err = req.Get(tt.hand)
+
+			case "/add":
+				resp, err = req.Post(tt.hand)
+
+			case "/summa":
+				resp, err = req.Post(tt.hand)
+				suite.Require().NoError(err)
+
+				ret := models.RetStruct{}
+				err = json.Unmarshal([]byte(resp.String()), &ret)
+
+				suite.Require().NoError(err, "bad unmarshal )")
+				suite.Require().Equal(tt.summ, ret.Cunt)
 
 			default:
 				return
@@ -54,8 +104,6 @@ func (suite *TS) Test_02() {
 				suite.Require().Error(err)
 			}
 			suite.Require().Equal(tt.status, resp.StatusCode())
-
-
 
 		})
 	}
