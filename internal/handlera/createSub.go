@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"emobile/internal/dbase"
 	"emobile/internal/models"
@@ -92,21 +93,13 @@ func (db *InterStruct) CreateHandler(rwr http.ResponseWriter, req *http.Request)
 		json.NewEncoder(rwr).Encode(errors.New("end date before start"))
 		return
 	}
-
-	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	// if err != nil {
-	// 	models.Logger.Error("NewPostgresPool", "", err)
-	// 	rwr.WriteHeader(http.StatusInternalServerError)
-	// 	json.NewEncoder(rwr).Encode(err)
-	// 	return
-	// }
-	// defer models.Inter.CloseDB()
-
-	// db.Inter.AddSub()
+	// если конечная дата подписки не задана - устанавливаем её в бесконечность
+	// таким образом, все поля подписки при внесении в базу будут заполнены ненулевыми значениями
+	if sub.Edt.IsZero() {
+		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
+	}
 
 	cTag, err := db.Inter.AddSub(req.Context(), sub)
-	//cTag, err := models.Inter.AddSub(req.Context(), sub)
-	// cTag, err := models.Inter.AddSub(req.Context(), sub)
 	if err != nil {
 		models.Logger.Error("AddSub table method", "", err)
 		rwr.WriteHeader(http.StatusInternalServerError)
@@ -115,11 +108,11 @@ func (db *InterStruct) CreateHandler(rwr http.ResponseWriter, req *http.Request)
 	}
 
 	ret := models.RetStruct{
-		Name: "Внесено записей",
+		Name: "Подписка создана",
 		Cunt: cTag.RowsAffected(),
 	}
 
-	models.Logger.Info("Подписка успешно создана", "", sub)
+	models.Logger.Info("Подписка", "создана", sub)
 
 	rwr.WriteHeader(http.StatusOK)
 	json.NewEncoder(rwr).Encode(ret)

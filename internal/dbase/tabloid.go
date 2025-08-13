@@ -62,6 +62,8 @@ func Ping(ctx context.Context) error {
 // AddSub добавление подписки в Базу Данных.
 func (dataBase *DBstruct) AddSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error) {
 
+	// валидность полей подписки проверена в CreateHandler
+
 	order := "INSERT INTO subscriptions(service_name, price, user_id, start_date, end_date) VALUES ($1, $2, $3, $4, $5) ;"
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 
@@ -76,6 +78,8 @@ func (dataBase *DBstruct) ListSub(ctx context.Context, pageSize, offset int) (su
 		return nil, err
 	}
 	defer rows.Close()
+
+	// в таблице нет NULL значений, поэтому сканируем напрямую
 
 	for rows.Next() {
 		sub := models.Subscription{}

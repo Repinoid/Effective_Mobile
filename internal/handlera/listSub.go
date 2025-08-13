@@ -28,19 +28,16 @@ func (db *InterStruct) ListHandler(rwr http.ResponseWriter, req *http.Request) {
 		page = 1
 	}
 
+	// записей на страницу вывода задаётся в .env  PAGE_SIZE
 	pageSize, err := strconv.Atoi(pageSizeStr)
 	if err != nil || pageSize < 1 {
 		pageSize = config.Configuration.PageSize
 	}
+	if pageSize == 0 {
+		pageSize = 20
+	}
 
 	offset := (page - 1) * pageSize
-
-	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	// if err != nil {
-	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer models.Inter.CloseDB()
 
 	// запрос в БД на получения списка всех подписок
 	subs, err := db.Inter.ListSub(req.Context(), pageSize, offset)
@@ -48,7 +45,7 @@ func (db *InterStruct) ListHandler(rwr http.ResponseWriter, req *http.Request) {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
+
 	if len(subs) != 0 {
 		rwr.WriteHeader(http.StatusOK)
 		models.Logger.Info("Cписок", "подписки", subs)
