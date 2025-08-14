@@ -34,13 +34,6 @@ func (db *InterStruct) SumHandler(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// models.Inter, err = dbase.NewPostgresPool(req.Context(), models.DSN)
-	// if err != nil {
-	// 	http.Error(rwr, err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
-	// defer models.Inter.CloseDB()
-
 	summa, err := db.Inter.SumSub(req.Context(), readSub)
 	if err != nil && err != sql.ErrNoRows {
 		http.Error(rwr, err.Error(), http.StatusInternalServerError)

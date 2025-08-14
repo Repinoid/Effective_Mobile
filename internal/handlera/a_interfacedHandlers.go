@@ -20,5 +20,5 @@ type SubscriptionStorage interface {
 	UpdateSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error)
 	DeleteSub(ctx context.Context, sub models.Subscription) (cTag pgconn.CommandTag, err error)
 	SumSub(ctx context.Context, sub models.Subscription) (summa int64, err error)
-	CloseDB()
+	Close()
 }

@@ -151,7 +151,7 @@ func (dataBase *DBstruct) DeleteSub(ctx context.Context, sub models.Subscription
 		AND (start_date <= $4 OR $4 = '0001-01-01 00:00:00')
 		AND (end_date >= $5 OR $5 = '0001-01-01 00:00:00' );
 	`
-	
+
 	cTag, err = dataBase.DB.Exec(ctx, order, sub.Service_name, sub.Price, sub.User_id, sub.Sdt, sub.Edt)
 	if err != nil {
 		models.Logger.Error("Delete", "", err.Error())
@@ -173,8 +173,8 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	// поэтому проверка условия dv.effective_start <= dv.effective_end
 	// order := `
 	// 	WITH date_vars AS (
-	// 		SELECT id, 
-	// 		GREATEST($3::DATE, start_date) AS effective_start, 
+	// 		SELECT id,
+	// 		GREATEST($3::DATE, start_date) AS effective_start,
 	// 		LEAST($4::DATE, end_date) AS effective_end,
 	// 		AGE( LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date) ) AS age_interval
 	// 		FROM subscriptions
@@ -189,7 +189,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	// 		) AS total_price
 	// 	FROM subscriptions s
 	// 	JOIN date_vars dv USING(id)
-	// 	WHERE 
+	// 	WHERE
 	// 	-- наименование подписки & user_id - либо пусто, либо соответствие табличному
 	// 	($1 = '' OR s.service_name = $1) AND
 	// 	($2 = '' OR s.user_id = $2::UUID) AND
@@ -214,7 +214,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	`
 
 	var nullsum sql.NullInt64
-	
+
 	row := dataBase.DB.QueryRow(ctx, order, sub.Service_name, sub.User_id, sub.Sdt, sub.Edt)
 
 	err = row.Scan(&nullsum)
@@ -229,7 +229,7 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 	return 0, sql.ErrNoRows
 }
 
-func (dataBase *DBstruct) CloseDB() {
+func (dataBase *DBstruct) Close() {
 	dataBase.DB.Close()
 }
 

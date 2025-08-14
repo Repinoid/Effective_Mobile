@@ -27,13 +27,3 @@ type RetStruct struct {
 	Name string
 	Cunt int64
 }
-
-// type SubscriptionStorage interface {
-// 	AddSub(ctx context.Context, sub Subscription) (cTag pgconn.CommandTag, err error)
-// 	ListSub(ctx context.Context, pageSize, offset int) (subs []Subscription, err error)
-// 	ReadSub(ctx context.Context, sub Subscription) (subs []Subscription, err error)
-// 	UpdateSub(ctx context.Context, sub Subscription) (cTag pgconn.CommandTag, err error)
-// 	DeleteSub(ctx context.Context, sub Subscription) (cTag pgconn.CommandTag, err error)
-// 	SumSub(ctx context.Context, sub Subscription) (summa int64, err error)
-// 	CloseDB()
-// }

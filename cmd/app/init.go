@@ -34,11 +34,4 @@ func init() {
 
 	log.Println("DB ok", "DSN", models.DSN)
 
-	// models.Inter, err = dbase.NewPostgresPool(context.Background(), models.DSN)
-	// if err != nil {
-	// 	log.Fatalln("NewPostgresPool", "fault", err)
-	// 	return
-	// }
-	// defer models.Inter.CloseDB()
-
-}
+	}

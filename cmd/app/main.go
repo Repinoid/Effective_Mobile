@@ -83,6 +83,7 @@ func Run(ctx context.Context) (err error) {
 		log.Fatalln("NewPostgresPool", "fault", err)
 		return
 	}
+	defer postgres.Close()
 
 	// func NewUserHandler(Inter models.SubscriptionStorage) *DBstruct {
 	// 	return &DBstruct{Inter: Inter}
