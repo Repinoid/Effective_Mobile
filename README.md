@@ -99,7 +99,7 @@
 
 ### Выполните тесты:
 
-`go test ./cmd/app -count=1`
+`go test ./internal/integratests -count=1`
 
 ### Технологии тестирования
 - Фреймворк: `github.com/stretchr/testify/suite`
