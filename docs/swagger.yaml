@@ -9,12 +9,16 @@ definitions:
     type: object
   models.Subscription:
     properties:
+      edt:
+        type: string
       end_date:
         description: '“start_date”: “07-2025”'
         type: string
       price:
         description: '“price”: 400,'
         type: integer
+      sdt:
+        type: string
       service_name:
         description: “Yandex Plus”,
         type: string
@@ -27,9 +31,6 @@ definitions:
     type: object
 info:
   contact: {}
-  description: API для управления подписками
-  title: Subscription Service API
-  version: "1.0"
 paths:
   /:
     get:
@@ -54,9 +55,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Add a new subscription to the database
+      description: Создает новую подписку с валидацией данных
       parameters:
-      - description: Subscription data
+      - description: Данные подписки
         in: body
         name: subscription
         required: true
@@ -66,18 +67,21 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Подписка успешно создана
           schema:
             $ref: '#/definitions/models.RetStruct'
         "400":
-          description: Validation error
+          description: Неверные данные (отсутствуют обязательные поля, неверный формат
+            UUID, даты)
           schema:
-            type: object
+            type: string
         "500":
-          description: Internal server error
+          description: Внутренняя ошибка сервера
           schema:
-            type: object
-      summary: Create a new subscription
+            type: string
+      summary: Создание подписки
+      tags:
+      - subscriptions
   /delete:
     delete:
       consumes:
@@ -94,7 +98,11 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Успешное удаление
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "204":
+          description: Не найдено записей для удаления
           schema:
             $ref: '#/definitions/models.RetStruct'
         "400":
@@ -108,32 +116,47 @@ paths:
       summary: Удаление подписки
   /list:
     get:
-      description: Возвращает полный список всех подписок из базы данных
+      consumes:
+      - application/json
+      description: Возвращает список всех подписок с поддержкой пагинации
+      parameters:
+      - description: Номер страницы (по умолчанию 1)
+        in: query
+        name: page
+        type: integer
+      - description: Размер страницы (по умолчанию из конфига)
+        in: query
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Список подписок
           schema:
             items:
               $ref: '#/definitions/models.Subscription'
             type: array
-        "500":
-          description: Ошибка сервера
+        "204":
+          description: Подписки не найдены
           schema:
-            type: object
-      summary: Получить список всех подписок
+            $ref: '#/definitions/models.RetStruct'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            type: string
+      summary: Получение списка подписок
       tags:
-      - Подписки
+      - subscriptions
   /read:
     post:
       consumes:
       - application/json
-      description: Возвращает список подписок по заданным параметрам
+      description: Возвращает подписки, соответствующие заданным критериям поиска
       parameters:
-      - description: Параметры поиска (обязательно service_name и user_id)
+      - description: Критерии поиска подписок
         in: body
-        name: subscription
+        name: criteria
         required: true
         schema:
           $ref: '#/definitions/models.Subscription'
@@ -141,20 +164,26 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Найденные подписки
           schema:
             items:
               $ref: '#/definitions/models.Subscription'
             type: array
+        "204":
+          description: Подписки не найдены
+          schema:
+            $ref: '#/definitions/models.RetStruct'
         "400":
-          description: Неверный формат запроса или отсутствуют обязательные поля
+          description: Неверный формат данных
           schema:
             type: string
         "500":
-          description: Ошибка сервера
+          description: Внутренняя ошибка сервера
           schema:
             type: string
-      summary: Получить подписки
+      summary: Поиск подписок
+      tags:
+      - subscriptions
   /summa:
     post:
       consumes:
@@ -171,7 +200,11 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Успешный расчет суммы
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "204":
+          description: Подписки не найдены
           schema:
             $ref: '#/definitions/models.RetStruct'
         "400":
@@ -187,10 +220,10 @@ paths:
     put:
       consumes:
       - application/json
-      description: Обновляет данные подписки в базе данных
+      description: 'Обновляет данные подписки по заданным критериям (обязательные
+        поля: service_name и user_id)'
       parameters:
-      - description: 'Данные подписки для обновления (обязательные: service_name и
-          user_id)'
+      - description: Данные для обновления подписки
         in: body
         name: subscription
         required: true
@@ -200,16 +233,22 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Подписка успешно обновлена
+          schema:
+            $ref: '#/definitions/models.RetStruct'
+        "204":
+          description: Подписка не найдена
           schema:
             $ref: '#/definitions/models.RetStruct'
         "400":
-          description: Неверный запрос
+          description: Неверные данные (отсутствуют обязательные поля)
           schema:
-            type: object
+            type: string
         "500":
-          description: Ошибка сервера
+          description: Внутренняя ошибка сервера
           schema:
-            type: object
+            type: string
       summary: Обновление подписки
+      tags:
+      - subscriptions
 swagger: "2.0"

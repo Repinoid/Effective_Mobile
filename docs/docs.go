@@ -46,17 +46,20 @@ const docTemplate = `{
         },
         "/add": {
             "post": {
-                "description": "Add a new subscription to the database",
+                "description": "Создает новую подписку с валидацией данных",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create a new subscription",
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Создание подписки",
                 "parameters": [
                     {
-                        "description": "Subscription data",
+                        "description": "Данные подписки",
                         "name": "subscription",
                         "in": "body",
                         "required": true,
@@ -67,21 +70,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Подписка успешно создана",
                         "schema": {
                             "$ref": "#/definitions/models.RetStruct"
                         }
                     },
                     "400": {
-                        "description": "Validation error",
+                        "description": "Неверные данные (отсутствуют обязательные поля, неверный формат UUID, даты)",
                         "schema": {
-                            "type": "object"
+                            "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "type": "object"
+                            "type": "string"
                         }
                     }
                 }
@@ -110,7 +113,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Успешное удаление",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "204": {
+                        "description": "Не найдено записей для удаления",
                         "schema": {
                             "$ref": "#/definitions/models.RetStruct"
                         }
@@ -132,17 +141,34 @@ const docTemplate = `{
         },
         "/list": {
             "get": {
-                "description": "Возвращает полный список всех подписок из базы данных",
+                "description": "Возвращает список всех подписок с поддержкой пагинации",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Подписки"
+                    "subscriptions"
                 ],
-                "summary": "Получить список всех подписок",
+                "summary": "Получение списка подписок",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Номер страницы (по умолчанию 1)",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Размер страницы (по умолчанию из конфига)",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Список подписок",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -150,10 +176,16 @@ const docTemplate = `{
                             }
                         }
                     },
-                    "500": {
-                        "description": "Ошибка сервера",
+                    "204": {
+                        "description": "Подписки не найдены",
                         "schema": {
-                            "type": "object"
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -161,18 +193,21 @@ const docTemplate = `{
         },
         "/read": {
             "post": {
-                "description": "Возвращает список подписок по заданным параметрам",
+                "description": "Возвращает подписки, соответствующие заданным критериям поиска",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Получить подписки",
+                "tags": [
+                    "subscriptions"
+                ],
+                "summary": "Поиск подписок",
                 "parameters": [
                     {
-                        "description": "Параметры поиска (обязательно service_name и user_id)",
-                        "name": "subscription",
+                        "description": "Критерии поиска подписок",
+                        "name": "criteria",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -182,7 +217,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Найденные подписки",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -190,14 +225,20 @@ const docTemplate = `{
                             }
                         }
                     },
+                    "204": {
+                        "description": "Подписки не найдены",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
                     "400": {
-                        "description": "Неверный формат запроса или отсутствуют обязательные поля",
+                        "description": "Неверный формат данных",
                         "schema": {
                             "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Ошибка сервера",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
                             "type": "string"
                         }
@@ -228,7 +269,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Успешный расчет суммы",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "204": {
+                        "description": "Подписки не найдены",
                         "schema": {
                             "$ref": "#/definitions/models.RetStruct"
                         }
@@ -250,17 +297,20 @@ const docTemplate = `{
         },
         "/update": {
             "put": {
-                "description": "Обновляет данные подписки в базе данных",
+                "description": "Обновляет данные подписки по заданным критериям (обязательные поля: service_name и user_id)",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "subscriptions"
+                ],
                 "summary": "Обновление подписки",
                 "parameters": [
                     {
-                        "description": "Данные подписки для обновления (обязательные: service_name и user_id)",
+                        "description": "Данные для обновления подписки",
                         "name": "subscription",
                         "in": "body",
                         "required": true,
@@ -271,21 +321,27 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Подписка успешно обновлена",
+                        "schema": {
+                            "$ref": "#/definitions/models.RetStruct"
+                        }
+                    },
+                    "204": {
+                        "description": "Подписка не найдена",
                         "schema": {
                             "$ref": "#/definitions/models.RetStruct"
                         }
                     },
                     "400": {
-                        "description": "Неверный запрос",
+                        "description": "Неверные данные (отсутствуют обязательные поля)",
                         "schema": {
-                            "type": "object"
+                            "type": "string"
                         }
                     },
                     "500": {
-                        "description": "Ошибка сервера",
+                        "description": "Внутренняя ошибка сервера",
                         "schema": {
-                            "type": "object"
+                            "type": "string"
                         }
                     }
                 }
@@ -308,6 +364,9 @@ const docTemplate = `{
         "models.Subscription": {
             "type": "object",
             "properties": {
+                "edt": {
+                    "type": "string"
+                },
                 "end_date": {
                     "description": "“start_date”: “07-2025”",
                     "type": "string"
@@ -315,6 +374,9 @@ const docTemplate = `{
                 "price": {
                     "description": "“price”: 400,",
                     "type": "integer"
+                },
+                "sdt": {
+                    "type": "string"
                 },
                 "service_name": {
                     "description": "“Yandex Plus”,",
@@ -335,12 +397,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "",
 	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
-	Title:            "Subscription Service API",
-	Description:      "API для управления подписками",
+	Title:            "",
+	Description:      "",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

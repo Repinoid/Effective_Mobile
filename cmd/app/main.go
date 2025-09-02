@@ -25,7 +25,6 @@ import (
 // @title Subscription Service API
 // @version 1.0
 // @description API для управления подписками
-
 // main godoc
 // @Summary Запуск приложения
 // @Description Основная функция запуска сервиса подписок
