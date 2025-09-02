@@ -22,3 +22,4 @@ type SubscriptionStorage interface {
 	SumSub(ctx context.Context, sub models.Subscription) (summa int64, err error)
 	Close()
 }
+ 

@@ -200,3 +200,4 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 func (dataBase *DBstruct) Close() {
 	dataBase.DB.Close()
 }
+ 
