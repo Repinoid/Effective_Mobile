@@ -84,12 +84,6 @@ func Run(ctx context.Context) (err error) {
 	}
 	defer postgres.Close()
 
-	// func NewUserHandler(Inter models.SubscriptionStorage) *DBstruct {
-	// 	return &DBstruct{Inter: Inter}
-	// }
-
-	// db := handlera.NewUserHandler(postgres)
-
 	db := &handlera.InterStruct{Inter: postgres}
 
 	router := mux.NewRouter()
@@ -121,15 +115,8 @@ func Run(ctx context.Context) (err error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	//hostaport := fmt.Sprintf("%s:%d", config.Configuration.DBHost, config.Configuration.AppPort)
-
 	// Используем AppHost (или 0.0.0.0) и AppPort для HTTP-сервера
 	serverAddr := fmt.Sprintf("%s:%d", config.Configuration.AppHost, config.Configuration.AppPort)
-
-	// srv := &http.Server{
-	// 	Addr:    hostaport,
-	// 	Handler: router,
-	// }
 
 	srv := &http.Server{
 		Addr:    serverAddr,
@@ -165,8 +152,6 @@ func Run(ctx context.Context) (err error) {
 	} else {
 		models.Logger.Info("Server stopped gracefully")
 	}
-
-	//err = http.ListenAndServe(fmt.Sprintf("%s:%d", models.Config.DBHost, models.Config.AppPort), router)
 
 	return
 

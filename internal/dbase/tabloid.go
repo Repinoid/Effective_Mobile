@@ -21,7 +21,6 @@ type DBstruct struct {
 func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(DSN)
-	//	poolConfig, err := pgxpool.ParseConfig(models.DSN)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse configuration: %w", err)
 	}
@@ -37,9 +36,6 @@ func NewPostgresPool(ctx context.Context, DSN string) (*DBstruct, error) {
 	if err := pool.Ping(ctx); err != nil {
 		return nil, fmt.Errorf("failed to ping the database: %w", err)
 	}
-
-	// dbStorage := &DBstruct{DB: pool}
-	// dbStorage.DB = pool
 
 	return &DBstruct{DB: pool}, nil
 }
@@ -168,34 +164,6 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 		sub.Edt = time.Date(9999, time.December, 31, 23, 59, 59, 999999999, time.UTC)
 	}
 
-	// GREATEST($3::DATE, start_date) - начало общего интервала подписка-условие, LEAST($4::DATE, end_date) - окончание
-	// разница (конец минус начало) может быть отрицательной (отрезки не пересекаются),
-	// поэтому проверка условия dv.effective_start <= dv.effective_end
-	// order := `
-	// 	WITH date_vars AS (
-	// 		SELECT id,
-	// 		GREATEST($3::DATE, start_date) AS effective_start,
-	// 		LEAST($4::DATE, end_date) AS effective_end,
-	// 		AGE( LEAST($4::DATE, end_date), GREATEST($3::DATE, start_date) ) AS age_interval
-	// 		FROM subscriptions
-	// 	)
-	// 	SELECT SUM(
-	// 		s.price *
-	// 		(
-	// 			-- разница в месяцах ПЛЮС 1, т.к. учитывается не разница end-start, а все месяцы в этом интервале
-	// 			EXTRACT(YEAR FROM age_interval) * 12 +
-	// 			EXTRACT(MONTH FROM age_interval) + 1
-	// 		)
-	// 		) AS total_price
-	// 	FROM subscriptions s
-	// 	JOIN date_vars dv USING(id)
-	// 	WHERE
-	// 	-- наименование подписки & user_id - либо пусто, либо соответствие табличному
-	// 	($1 = '' OR s.service_name = $1) AND
-	// 	($2 = '' OR s.user_id = $2::UUID) AND
-	// 	-- условие пересечения временнЫх отрезков
-	// 	dv.effective_start <= dv.effective_end ;
-	// `
 	order := `
 		WITH filtered_subscriptions AS (
 			SELECT id, service_name, price, start_date, end_date
@@ -232,7 +200,3 @@ func (dataBase *DBstruct) SumSub(ctx context.Context, sub models.Subscription) (
 func (dataBase *DBstruct) Close() {
 	dataBase.DB.Close()
 }
-
-//  docker exec -it pcontB psql -U testuser -d testdb -c "select * from subscriptions"
-
-// docker exec -it pcontB psql -U testuser -d testdb -c "SELECT service_name, start_date, end_date, EXTRACT(MONTH FROM end_date) FROM subscriptions"
