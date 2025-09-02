@@ -13,7 +13,8 @@ import (
 // @Accept json
 // @Produce json
 // @Param subscription body models.Subscription true "Параметры для расчета суммы"
-// @Success 200 {object} models.RetStruct
+// @Success 200 {object} models.RetStruct "Успешный расчет суммы"
+// @Success 204 {object} models.RetStruct "Подписки не найдены"
 // @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /summa [post]
@@ -40,8 +41,6 @@ func (db *InterStruct) SumHandler(rwr http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rwr.WriteHeader(http.StatusOK)
-
 	ret := models.RetStruct{
 		Name: "Сумма подписок",
 		Cunt: summa,
@@ -49,7 +48,11 @@ func (db *InterStruct) SumHandler(rwr http.ResponseWriter, req *http.Request) {
 
 	if summa == 0 || err == sql.ErrNoRows {
 		ret.Name = "Нет таких подписок"
+		rwr.WriteHeader(http.StatusNoContent)
+	} else {
+		rwr.WriteHeader(http.StatusOK)
 	}
+
 	models.Logger.Info("Сумма подписок ", "", ret)
 
 	json.NewEncoder(rwr).Encode(ret)
@@ -61,7 +64,8 @@ func (db *InterStruct) SumHandler(rwr http.ResponseWriter, req *http.Request) {
 // @Accept json
 // @Produce json
 // @Param subscription body models.Subscription true "Данные подписки для удаления"
-// @Success 200 {object} models.RetStruct
+// @Success 200 {object} models.RetStruct "Успешное удаление"
+// @Success 204 {object} models.RetStruct "Не найдено записей для удаления"
 // @Failure 400 {object} string "Неверный формат запроса"
 // @Failure 500 {object} string "Ошибка сервера"
 // @Router /delete [delete]

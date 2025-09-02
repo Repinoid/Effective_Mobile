@@ -9,13 +9,17 @@ import (
 	"emobile/internal/models"
 )
 
-// ListSub godoc
-// @Summary Получить список всех подписок
-// @Description Возвращает полный список всех подписок из базы данных
-// @Tags Подписки
+// ListHandler возвращает список подписок с пагинацией
+// @Summary Получение списка подписок
+// @Description Возвращает список всех подписок с поддержкой пагинации
+// @Tags subscriptions
+// @Accept json
 // @Produce json
-// @Success 200 {array} models.Subscription
-// @Failure 500 {object} object "Ошибка сервера"
+// @Param page query int false "Номер страницы (по умолчанию 1)"
+// @Param pageSize query int false "Размер страницы (по умолчанию из конфига)"
+// @Success 200 {array} models.Subscription "Список подписок"
+// @Success 204 {object} models.RetStruct "Подписки не найдены"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
 // @Router /list [get]
 func (db *InterStruct) ListHandler(rwr http.ResponseWriter, req *http.Request) {
 

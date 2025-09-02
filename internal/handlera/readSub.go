@@ -7,15 +7,17 @@ import (
 	"net/http"
 )
 
-// ReadSub godoc
-// @Summary Получить подписки
-// @Description Возвращает список подписок по заданным параметрам
+// ReadHandler выполняет поиск подписок по критериям
+// @Summary Поиск подписок
+// @Description Возвращает подписки, соответствующие заданным критериям поиска
+// @Tags subscriptions
 // @Accept json
 // @Produce json
-// @Param subscription body models.Subscription true "Параметры поиска (обязательно service_name и user_id)"
-// @Success 200 {array} models.Subscription
-// @Failure 400 {object} string "Неверный формат запроса или отсутствуют обязательные поля"
-// @Failure 500 {object} string "Ошибка сервера"
+// @Param criteria body models.Subscription true "Критерии поиска подписок"
+// @Success 200 {array} models.Subscription "Найденные подписки"
+// @Success 204 {object} models.RetStruct "Подписки не найдены"
+// @Failure 400 {string} string "Неверный формат данных"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
 // @Router /read [post]
 func (db *InterStruct) ReadHandler(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
@@ -26,16 +28,6 @@ func (db *InterStruct) ReadHandler(rwr http.ResponseWriter, req *http.Request) {
 		http.Error(rwr, err.Error(), http.StatusBadRequest)
 		return
 	}
-
-	// // в запросе read обязятельныц поля Service_name и User_id
-	// if readSub.Service_name == "" {
-	// 	http.Error(rwr, "no service name", http.StatusBadRequest)
-	// 	return
-	// }
-	// if readSub.User_id == "" {
-	// 	http.Error(rwr, "no user_id", http.StatusBadRequest)
-	// 	return
-	// }
 
 	subs, err := db.Inter.ReadSub(req.Context(), readSub)
 	if err != nil {
@@ -61,15 +53,17 @@ func (db *InterStruct) ReadHandler(rwr http.ResponseWriter, req *http.Request) {
 
 }
 
-// UpdateSub godoc
+// UpdateHandler обновляет данные подписки
 // @Summary Обновление подписки
-// @Description Обновляет данные подписки в базе данных
+// @Description Обновляет данные подписки по заданным критериям (обязательные поля: service_name и user_id)
+// @Tags subscriptions
 // @Accept json
 // @Produce json
-// @Param subscription body models.Subscription true "Данные подписки для обновления (обязательные: service_name и user_id)"
-// @Success 200 {object} models.RetStruct
-// @Failure 400 {object} object "Неверный запрос"
-// @Failure 500 {object} object "Ошибка сервера"
+// @Param subscription body models.Subscription true "Данные для обновления подписки"
+// @Success 200 {object} models.RetStruct "Подписка успешно обновлена"
+// @Success 204 {object} models.RetStruct "Подписка не найдена"
+// @Failure 400 {string} string "Неверные данные (отсутствуют обязательные поля)"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
 // @Router /update [put]
 func (db *InterStruct) UpdateHandler(rwr http.ResponseWriter, req *http.Request) {
 

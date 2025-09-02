@@ -32,15 +32,16 @@ func (db *InterStruct) DBPinger(rwr http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(rwr, `{"status":"StatusOK"}`)
 }
 
-// CreateSub godoc
-// @Summary Create a new subscription
-// @Description Add a new subscription to the database
+// CreateHandler создает новую подписку
+// @Summary Создание подписки
+// @Description Создает новую подписку с валидацией данных
+// @Tags subscriptions
 // @Accept json
 // @Produce json
-// @Param subscription body models.Subscription true "Subscription data"
-// @Success 200 {object} models.RetStruct
-// @Failure 400 {object} object "Validation error"
-// @Failure 500 {object} object "Internal server error"
+// @Param subscription body models.Subscription true "Данные подписки"
+// @Success 200 {object} models.RetStruct "Подписка успешно создана"
+// @Failure 400 {string} string "Неверные данные (отсутствуют обязательные поля, неверный формат UUID, даты)"
+// @Failure 500 {string} string "Внутренняя ошибка сервера"
 // @Router /add [post]
 func (db *InterStruct) CreateHandler(rwr http.ResponseWriter, req *http.Request) {
 	rwr.Header().Set("Content-Type", "application/json")
